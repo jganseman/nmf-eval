@@ -16,7 +16,7 @@ function [W,H,errs,vout] = nmf_kl_sparse_es(V, r, varargin)
 %                   (err(t-1)-err(t))/(err(1)-err(t)) < thresh
 %                   ignored if thesh is empty [[]]
 %   norm_w [num]  - Type of normalization to use for columns of W [1]
-%                   can be 0 (none), 1 (1-norm), or 2 (2-norm)
+%                   can be 1 (1-norm) or 2 (2-norm)
 %   norm_h [num]  - Type of normalization to use for rows of H [0]
 %                   can be 0 (none), 1 (1-norm), 2 (2-norm), or 'a' (sum(H(:))=1)
 %   verb   [num]  - Verbosity level (0-3, 0 means silent) [1]
@@ -42,8 +42,7 @@ function [W,H,errs,vout] = nmf_kl_sparse_es(V, r, varargin)
 %
 % [1] D. Lee and S. Seung, "Algorithms for Non-negative Matrix Factorization", 
 %     NIPS, 2001
-% [2] J. Eggert and E. Korner, "Sparse Coding and NMF", in Neural 
-%     Networks, 2004
+% [2] J. Eggert and E. Korner, "Sparse Coding and NMF", in Neural Networks, 2004
 % [3] M. Schmidt, "Speech Separation using Non-negative Features and Sparse 
 %     Non-negative Matrix Factorization", Tech. Report, 2007
 %
@@ -82,7 +81,7 @@ end
                         'W', [], 'H', []);
 
 if norm_w == 0
-    warning('nmf_kl_sparse_es: really should be normalizing W!');
+    error([mfilename ': W has to be normalized to prevent scaling drift!']);
 end
 
 % initialize W based on what we got passed
@@ -109,14 +108,8 @@ else % we aren't H
     update_H = false;
 end
 
-if norm_w ~= 2
-    warning('nmf_kl_sparse_es: W should use Euclidean norm to prevent scaling drift!');
-end
-
-if norm_w ~= 0
-    % normalize W
-    W = normalize_W(W,norm_w);
-end
+% normalize W
+W = normalize_W(W,norm_w);
 
 if norm_h ~= 0
     % normalize H
@@ -142,11 +135,14 @@ for t = 1:niter
     % update W if requested
     if update_W
         R = V./(W*H);
-        W = W .* ( (R*H' + W .* (Onn*(Onm*H' .* W))) ./ ...
-                   max(Onm*H' + W .* (Onn*(R*H' .* W)), myeps) );
-        if norm_w ~= 0
-            W = normalize_W(W,norm_w);
+        if norm_w == 1
+            W = W .* ( (R*H' + (Onn*(Onm*H' .* W))) ./ ...
+                       max(Onm*H' + (Onn*(R*H' .* W)), myeps) );
+        elseif norm_w == 2
+            W = W .* ( (R*H' + W .* (Onn*(Onm*H' .* W))) ./ ...
+                       max(Onm*H' + W .* (Onn*(R*H' .* W)), myeps) );
         end
+        W = normalize_W(W,norm_w);
     end
     
     R = W*H;
@@ -158,7 +154,7 @@ for t = 1:niter
     
     % display error if asked
     if verb >= 3
-        fprintf(1, ['nmf_kl_sparse_es: iter=%d, I-div=%f, sparse_err=%f (alpha=%f), ' ...
+        fprintf(1, [mfilename ': iter=%d, I-div=%f, sparse_err=%f (alpha=%f), ' ...
                     'total_err=%f\n'], t, I_errs(t), s_errs(t), alpha, errs(t));
     end
     
@@ -174,7 +170,7 @@ end
 
 % display error if asked
 if verb >= 2
-    fprintf(1, ['nmf_kl_sparse_es: final, I-div=%f, sparse_err=%f (alpha=%f), ' ...
+    fprintf(1, [mfilename ': final, I-div=%f, sparse_err=%f (alpha=%f), ' ...
                 'total_err=%f\n'], I_errs(t), s_errs(t), alpha, errs(t));
 end
 
