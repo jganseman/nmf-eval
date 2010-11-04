@@ -1,4 +1,4 @@
-NMFlib v0.1.1
+NMFlib v0.1.2
 Graham Grindlay
 grindlay@ee.columbia.edu
 02/12/2010
@@ -225,3 +225,6 @@ http://www.ee.columbia.edu/~grindlay
 03/11/2010 - v0.1 : Initial release
 
 04/09/2010 - v0.1.1 : Fixed bug in nmf_convex.m that prevented proper handling of mixed-sign case (thanks to Charles Martin)
+
+11/04/2010 - v0.1.2 : Fixed bugs in nmf_euc_sparse_es.m and nmf_kl_sparse_es.m that caused the wrong update equations to be used with
+                      L1 normalization on W.  Also added some error checking to these functions.
