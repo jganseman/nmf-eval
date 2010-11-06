@@ -22,7 +22,7 @@ function [W,H,errs,vout] = nmf_beta(V,r,varargin)
 %    - I-divergence (beta=1)
 %    - Euclidean distance (beta=2)
 %
-% Inputs: (all except V and r are optional and passed in in name-valuepairs)
+% Inputs: (all except V and r are optional and passed in in name-value pairs)
 %   V      [mat]  - Input matrix (n x m)
 %   r      [num]  - Rank of the decomposition
 %   beta   [num]  - beta parameter [0]

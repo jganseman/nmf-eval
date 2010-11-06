@@ -81,7 +81,7 @@ end
                         'W', [], 'H', []);
 
 if norm_w == 0
-    error([mfilename ': W has to be normalized to prevent scaling drift!']);
+    error('nmf_euc_sparse_es: W has to be normalized to prevent scaling drift!');
 end
 
 % initialize W based on what we got passed
@@ -152,7 +152,7 @@ for t = 1:niter
     
     % display error if asked
     if verb >= 3
-        fprintf(1, [mfilename ': iter=%d, euc_err=%f, sparse_err=%f (alpha=%f), ' ...
+        fprintf(1, ['nmf_euc_sparse_es: iter=%d, euc_err=%f, sparse_err=%f (alpha=%f), ' ...
                     'total_err=%f\n'], t, I_errs(t), s_errs(t), alpha, errs(t));
     end
     
@@ -168,7 +168,7 @@ end
 
 % display error if asked
 if verb >= 2
-    fprintf(1, [mfilename ': final, euc_err=%f, sparse_err=%f (alpha=%f), ' ...
+    fprintf(1, ['nmf_euc_sparse_es: final, euc_err=%f, sparse_err=%f (alpha=%f), ' ...
                 'total_err=%f\n'], I_errs(t), s_errs(t), alpha, errs(t));
 end
 
