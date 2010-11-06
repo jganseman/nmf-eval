@@ -1,4 +1,4 @@
-NMFlib v0.1.2
+NMFlib v0.1.3
 Graham Grindlay
 grindlay@ee.columbia.edu
 02/12/2010
@@ -47,6 +47,9 @@ algorithm.  Currently, the library contains the following algorithms:
                       This leads to an interesting analog to k-means clustering where V*W represents cluster centroids
 		      and H encodes the membership of each column of V in each centroid.  In contrast to the other NMF
 		      algorithms, V can be of mixed sign in Convex NMF.
+
+[nmf_euc_orth]      - Implements Orthogonal NMF [11] which tries to keep either the basis or weight vectors as orthogonal
+                      as possible while still accurately reconstructing the data.
 
 ---------------------------
 ------- Utilities ---------
@@ -217,6 +220,8 @@ http://www.ee.columbia.edu/~grindlay
 [10] Grindlay, G. and Ellis, D.P.W., "Multi-Voice Polyphonic Music Transcription Using Eigeninstruments", IEEE Workshop 
      on Applications of Signal Processing to Audio and Acoustics, 2009.
 
+[11] S. Choi, "Algorithms for Orthogonal Nonnegative Matrix Factorization", IEEE International Joint Conference on 
+     Neural Networks, 2008.
 
 ===========================
 ======== Changelog ========
@@ -228,3 +233,5 @@ http://www.ee.columbia.edu/~grindlay
 
 11/04/2010 - v0.1.2 : Fixed bugs in nmf_euc_sparse_es.m and nmf_kl_sparse_es.m that caused the wrong update equations to be used with
                       L1 normalization on W.  Also added some error checking to these functions.
+
+11/05/2010 - v0.1.3 : Added support for Orthogonal NMF.
