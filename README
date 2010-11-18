@@ -16,13 +16,13 @@ algorithm.  Currently, the library contains the following algorithms:
                       the NMF varieties listed below, although you certainly don't need to use it if you don't want to.
 
 [nmf_kl]            - The original multiplicative update algorithm presented by Lee and Seung [1] that uses the normalized 
-                      KL-divergence or I-divergence as its object function:  min sum(sum(V||W*H))
+                      KL-divergence or I-divergence as its object function:  min sum(sum(I(V||W*H)))
  
 [nmf_euc]           - The original multiplicative update algorithm presented by Lee and Seung [1] that uses the Euclidean 
                       distance for its objective function:  min sum(sum((V-W*H).^2)) s.t. W>=0,H>=0
 
 [nmf_kl_loc]        - Local NMF [2], a variant of the I-divergence objective that includes additional penalty terms that 
-                      encourage  bases to be compact and orthogonal.
+                      encourage bases to be compact and orthogonal.
 
 [nmf_kl_sparse_v]   - Variant of I-divergence NMF algorithm that includes a weighted penalty term to encourage sparsity 
                       in H [3].
@@ -86,7 +86,7 @@ library as follows:
 [W,H,err] = nmf_alg(V, 5, 'alg', @nmf_kl, 'niter', 500);
 
 W will be a 100x5 matrix, H will be a 5x500 matrix, and err will be a 1x500 vector of error values.  Now, suppose we want 
-to instead use Virtanen's [03] sparse NMF algorithm with a sparsity penalty of 0.1, but we want to run 3 repetitions of the 
+to instead use Virtanen's [3] sparse NMF algorithm with a sparsity penalty of 0.1, but we want to run 3 repetitions of the 
 algorithm (returning the best) to ameliorate the effects of random initialization.  In this case, we would do:
 
 [W,H,err] = nmf_alg(V, 5, 'alg', @nmf_kl_sparse_v, 'niter', 500, 'nreps', 3, 'alpha', 0.1, 'verb', 1);
@@ -132,7 +132,7 @@ The following parameters are always passed (in order) to nmf_alg directly):
 The rest of the parameters are optional (they have default values) and are passed in name-value pairs:
 
    alg     [fcn]  - Function handle of specific NMF algorithm to use. [@nmf_kl]
-                    Functions must conform to the following signature: [W,H,errs,varargout] = f(V,r,varargin);
+                    Functions must conform to the following signature: [W,H,errs,varargout] = alg(V,r,varargin);
    nrep    [num]  - Number of repetitions to try [1]
    seedrep [bool] - Use seed-based repitions? [false]
                     If true, only space for a single W and single H are kept around as the random seed is stored and used 
