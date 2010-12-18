@@ -18,10 +18,20 @@ function [W,H,errs,vout] = nmf_kl_con(V,r,varargin)
 %                   the algorithm has considered to have converged when:
 %                   (err(t-1)-err(t))/(err(1)-err(t)) < thresh
 %                   ignored if thesh is empty [[]]
-%   norm_w [num]  - Type of normalization to use for columns of W [1]
-%                   can be 0 (none), 1 (1-norm), or 2 (2-norm)
+%   norm_w [num]  - Type of normalization to use for W [1]
+%                   Can be (see normalize_W for details):
+%                      -2 for (patch-level 2-norm)
+%                      -1 for (patch-level 1-norm)
+%                       0 for no normalization
+%                       2 for (column-level 2-norm)
+%                       1 for (column-level 1-norm)
 %   norm_h [num]  - Type of normalization to use for rows of H [0]
-%                   can be 0 (none), 1 (1-norm), 2 (2-norm), or 'a' (sum(H(:))=1)
+%                   Can be (see normalize_H for details):
+%                      -2 for (matrix-level 2-norm)
+%                      -1 for (matrix-level 1-norm)
+%                       0 for no normalization
+%                       2 for (row-level 2-norm)
+%                       1 for (row-level 1-norm)
 %   verb   [num]  - Verbosity level (0-3, 0 means silent) [1]
 %   W0     [mat]  - Initial W values (n x r) [[]]
 %                   empty means initialize randomly
@@ -129,7 +139,7 @@ for t = 1:niter
         end
         
         if norm_w ~= 0
-            % normalize columns of W
+            % normalize W
             W = normalize_W(W,norm_w);
         end
     end

@@ -6,6 +6,10 @@ function W = normalize_W(W, type)
 %  2 - use 2-norm
 %  k - multiply the 1-norm by k
 %
+% Normalize vectorized matrix/matrices of W using:
+%  -1 - use 1-norm [default]
+%  -2 - use 2-norm
+%
 % This should work both for matrices and tensors (only for Convolutive NMF)
 %
 % 2010-01-14 Graham Grindlay (grindlay@ee.columbia.edu)
@@ -42,6 +46,16 @@ switch type
             for i = 1:size(W,2)
                 W(:,i,j) = W(:,i,j) ./ norm(W(:,i,j),2);
             end
+        end
+        
+    case -1
+        for j = 1:size(W,3)
+            W(:,:,j) = W(:,:,j) ./ norm(vec(W(:,:,j)),1);
+        end
+        
+    case -2
+        for j = 1:size(W,3)
+            W(:,:,j) = W(:,:,j) ./ norm(vec(W(:,:,j)),2);
         end
         
     case 0

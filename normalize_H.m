@@ -1,11 +1,13 @@
 function H = normalize_H(H, type)
 % function H = normalize_H(H, type)
 %
-% Normalize rows of H using type which can be:
-%  1   - use 1-norm [default]
-%  2   - use 2-norm
-%  k   - multiply the 1-norm by k
-%  'a' - means make sum(H(:))=1
+% Normalize H using type which can be:
+%  -1   - use 1-norm of vectorized matrix
+%  -2   - use 2-norm of vectorized matrix
+%   1   - use 1-norm of each row [default]
+%   2   - use 2-norm or each row
+%   k   - multiply the 1-norm of each row by k
+%   'a' - means make sum(H(:))=1 (same as -1)
 %
 % 2010-01-14 Graham Grindlay (grindlay@ee.columbia.edu)
 
@@ -29,6 +31,12 @@ if nargin < 2
 end
 
 switch type
+    case -1
+        H = H ./ norm(H(:),1);
+        
+    case -2
+        H = H ./ norm(H(:),2);
+        
     case 1
         for i = 1:size(H,1)
             H(i,:) = H(i,:) ./ norm(H(i,:),1);
@@ -39,12 +47,12 @@ switch type
             H(i,:) = H(i,:) ./ norm(H(i,:),2);
         end
         
-    case 'a'
+    case 'a' % TODO: clear this all up
         H = H./sum(H(:));
         
     case 0
         
-    otherwise 
+    otherwise % TODO: get rid of this
         for i = 1:size(H,1)
             H(i,:) = type*H(i,:) ./ norm(H(i,:),1);
         end
