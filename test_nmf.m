@@ -1,0 +1,16 @@
+A = [2,3,4,5,7,8,9;3,2,1,3,5,6,6;4,7,9,3,1,2,4;2,4,6,9,7,4,1;2,4,6,0,8,12,3;5,3,1,2,4,6,7]
+fprintf('\n\n\n\n\n This is the output for delta_kmeans by the method provided by Lee Daniel et al:\n\n\n\n\n')
+[sum_err,num_ite,G,F] = delta_kmeans(A,3,500,.5)
+fprintf('\n\n\n\n\n This is the output for G_orthogonal by the method provided by Chris Ding et al:\n\n\n\n\n')
+[sum_err,num_ite,G,F] = G_orthogonal(A,3,500,0.2)
+fprintf('\n\n\n\n\n This is the output for Bi_orthogonal by the method provided by Chris Ding et al:\n\n\n\n\n')
+[sum_err,num_ite,F,S,G] = Bi_orthogonal(A,3,2,500,0.2)
+fprintf('\n\n\n\n\n This is the output for Semi_nmf by the method provided by Chris Ding et al when input matrix is nonnegative:\n\n\n\n\n')
+[sum_err,num_ite,G,F] = Semi_nmf(A,3,500,0.2)
+fprintf('\n\n\n\n\n This is the output for Convex_nmf by the method provided by Chris Ding et al when input matrix is nonnegative:\n\n\n\n\n')
+[sum_err,num_ite,W,G,F] = Convex_nmf(A,3,500,0.2)
+A_mix=[1.3,1.8,4.8,7.1,5,5.2,8;1.5,6.9,3.9,-5.5,-8.5,-3.9,-5.5;6.5,1.6,8.2,-7.2,-8.7,-7.9,-5.2;3.8,8.3,4.7,6.4,7.5,3.2,7.4;-7.3,-1.8,-2.1,2.7,6.8,4.8,6.2]
+fprintf('\n\n\n\n\n This is the output for Semi_nmf by the method provided by Chris Ding et al with mixed signs in input matrix :\n\n\n\n\n')
+[sum_err,num_ite,G,F] = Semi_nmf(A_mix,2,500,0.05)
+fprintf('\n\n\n\n\n This is the output for Convex_nmf by the method provided by Chris Ding et al with mixed signs in input matrix :\n\n\n\n\n')
+[sum_err,num_ite,W,G,F] = Convex_nmf(A_mix,2,500,0.05)
