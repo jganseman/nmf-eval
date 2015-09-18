@@ -1,3 +1,4 @@
+clear all;
 
 % add paths
 addpath ./scatt_functions
