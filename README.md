@@ -4,6 +4,7 @@ Code implementing the model from "Source Separation with Scattering NMF", by J. 
 Run demo.m
 
 Note 1: Training of dictionaries requires the matlab package SPAMS (http://spams-devel.gforge.inria.fr). 
+
 Note 2: Some parts of the scattering code are borrowed from the Scatnet package (https://github.com/scatnet/scatnet)
 
 
