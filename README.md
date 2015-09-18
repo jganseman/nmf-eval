@@ -1,5 +1,5 @@
 # scattnmf
-Code implementing the model from "Source Separation with Scattering NMF", by J. Bruna, P. Sprechmann and Y. LeCun, ICASSP 2015.
+Code implementing the model from "Source Separation with Scattering NMF", by J. Bruna, P. Sprechmann and Y. LeCun, ICASSP 2015. (http://cims.nyu.edu/~bruna/Publications_files/paper_icassp.pdf)
 
 Run demo.m
 
