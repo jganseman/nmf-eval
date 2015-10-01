@@ -18,7 +18,7 @@ for l=1:L
 in_up(:,:,l)=interp2(xx0,yy0,in(:,:,l),xx,yy,'spline');
 end
 
-iters = getoptions(options, 'maxiters', 16);
+iters = getoptions(options, 'maxiters', 20);
 
 %init with random phase (except low frequencies)
 z = randn(size(in_up)) + i * randn(size(in_up));
@@ -43,7 +43,7 @@ fout = fft(out);
 for j=1:J
 coeffs(:,j) = ifft(fout.*filts.psi{j});
 end
-coeffs(:,J) = 0*ifft(fout.*filts.phi);
+coeffs(:,J+1) = 0*ifft(fout.*filts.phi);
 z(:,:,l) = transpose(coeffs);
 end
 end

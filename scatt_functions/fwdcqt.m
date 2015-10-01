@@ -1,4 +1,4 @@
-function U = fwdcqt(in, options, filts)
+function [U,P] = fwdcqt(in, options, filts)
 
 J1 = size(filts.psi,2);
 [N, L]=size(in);
@@ -18,4 +18,5 @@ P(J1+1,:,:)=exp(i*angle(tmp));
 
 scratch.P = P;
 U=abs(scratch.X{1});
+U(end,:,:) = scratch.X{1}(end,:,:);
 
