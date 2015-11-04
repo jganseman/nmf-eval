@@ -21,7 +21,7 @@ function run_SGNMF
     % NMF learning
     options.alpha = 0;
     options.beta = 0;
-    [Un,Vn] = GNMF(X,nClass,[],options);
+    [Un,Vn] = SGNMF(X,nClass,[],options);
     XpNMF = Un*Vn';    
     XdNMF = XpNMF;
     XdNMF(X~=0) = 0;
@@ -29,7 +29,7 @@ function run_SGNMF
     % SNMF learning
 	options.alpha = 0.5;
     options.beta = 0.9;
-    [Us,Vs] = GNMF(X,nClass,adj,options);
+    [Us,Vs] = SGNMF(X,nClass,adj,options);
     XpSNMF = Us*Vs';    
     XdSNMF = XpSNMF;
     XdSNMF(X~=0) = 0;

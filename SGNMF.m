@@ -30,10 +30,6 @@ function [U_final, V_final, nIter_final, objhistory_final] = SGNMF(X, k, W, opti
 % Transactions on Pattern Analysis and Machine Intelligence, , Vol. 33, No.
 % 8, pp. 1548-1560, 2011.  
 %
-%
-%   version 2.0 --April/2009 
-%   version 1.0 --April/2008 
-%
 %   originally from Deng Cai (dengcai AT gmail.com)
 %   sparsity contraints are added by Hongyu Su (hongyu.su@me.com)
 %
