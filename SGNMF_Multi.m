@@ -1,4 +1,4 @@
-function [U_final, V_final, nIter_final, objhistory_final] = GNMF_Multi(X, k, W, options, U, V)
+function [U_final, V_final, nIter_final, objhistory_final] = SGNMF_Multi(X, k, W, options, U, V)
 % Graph regularized Non-negative Matrix Factorization (GNMF) with
 %          multiplicative update
 %
@@ -27,10 +27,6 @@ function [U_final, V_final, nIter_final, objhistory_final] = GNMF_Multi(X, k, W,
 % Transactions on Pattern Analysis and Machine Intelligence, , Vol. 33, No.
 % 8, pp. 1548-1560, 2011.  
 %
-%
-%   version 2.1 --Dec./2011 
-%   version 2.0 --April/2009 
-%   version 1.0 --April/2008 
 %
 %   Originally from Deng Cai (dengcai AT gmail.com)
 %   Sparsity constraints added by Hongyu Su (hongyu.su@me.com)
