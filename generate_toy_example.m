@@ -4,8 +4,11 @@
 
 
 function [adj,X] = generate_toy_example(vNum,recordNum,lenInterval)
-    % this function is to generate data for the toy example
-    
+% this function is to generate data for the toy example
+% __author__ = Hongyu Su
+% __email__ = hongyu.su@me.com
+%      
+
     % define random seed
     randn('state',0);
     rand('twister',0);
@@ -15,7 +18,7 @@ function [adj,X] = generate_toy_example(vNum,recordNum,lenInterval)
     % number of record
     %recordNum = 400;
     
-    % generate adjacenty matrix
+    % generate adjacenty matrix of the graph
     adj = zeros(vNum);
     for i=1:(vNum-1)
         adj(i,i+1) = 1;
@@ -23,7 +26,7 @@ function [adj,X] = generate_toy_example(vNum,recordNum,lenInterval)
     end
     adj(vNum/2,vNum/2+1) = 0;
     
-    % generate running record
+    % generate running record, user-preference matrix
     X = zeros(recordNum,vNum);
     for i=1:recordNum
         for k=1:1
