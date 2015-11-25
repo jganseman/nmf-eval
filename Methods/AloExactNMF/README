@@ -1,0 +1,30 @@
+Before running NMF_GCD, you have to compile doiter.cpp first. 
+
+To compile, simply type the following command in MATLAB:
+>>	mex doiter.cpp
+
+Usage of NMF_GCD: 
+% Nonnegative Matrix Factorization (NMF) via Greedy Coordinate Descent
+%
+% Usage: [W H objGCD timeGCD] = GCD(V, k, maxiter, Winit, Hinit, trace)
+%
+% This software solve the following least squares NMF problem:
+%
+%	min_{W,H} ||V-WH||_F^2     s.t. W>=0, H>=0
+%
+% input: 
+%		V: the input n by m dense matrix
+%		k: the specified rank
+%		maxiter: maximum number of iterations
+%		Winit: initial of W (n by k dense matrix)
+%		Hinit: initial of H (k by m dense matrix)
+%		trace: 1: compute objective value per iteration.
+%			   0: do not compute objective value per iteration. (default)
+%
+% output: 
+%		NMF_GCD will output nonnegative matrices W, H, such that WH is an approximation of V
+%		W: n by k dense matrix
+%		H: k by m dense matrix
+%		objGCD: objective values. 
+%		timeGCD: time taken by GCD. 
+

@@ -1,0 +1,10 @@
+[?1h=
+                            < M A T L A B (R) >
+                  Copyright 1984-2012 The MathWorks, Inc.
+                    R2012b (8.0.0.783) 64-bit (glnxa64)
+                              August 22, 2012
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
