@@ -67,3 +67,14 @@ Afterwards, the following toolboxes were downloaded and added as proper director
 	% pull the master branch of NMF_APD in subtree mode
 8. git pull -s subtree NMF_APD master
 
+	% ADD Liu's NMF implementations
+
+3. git remote add Liu_NMFs git://github.com/Claire-Ling-Liu/NMFs
+4. git fetch Liu_NMFs
+5. git merge -s ours --no-commit Liu_NMFs/master
+	% add folder prefix to whatever thing is pulled from this repo:
+6. git read-tree --prefix=Liu_NMFs/ -u Liu_NMFs/master
+7. git commit -m "Imported Liu_NMFs as subtree"
+	% pull the master branch of Liu_NMFs in subtree mode
+8. git pull -s subtree Liu_NMFs master
+
