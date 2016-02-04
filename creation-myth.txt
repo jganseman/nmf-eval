@@ -56,3 +56,14 @@ Afterwards, the following toolboxes were downloaded and added as proper director
 	% pull the master branch of SGNMF in subtree mode
 8. git pull -s subtree SGNMF master
 
+	% ADD NMF APD repository, which contains plenty of other implementations
+
+3. git remote add NMF_APD git://github.com/khuongnd/NMF_APD
+4. git fetch NMF_APD
+5. git merge -s ours --no-commit NMF_APD/master
+	% add folder prefix to whatever thing is pulled from this repo:
+6. git read-tree --prefix=NMF_APD/ -u NMF_APD/master
+7. git commit -m "Imported NMF_APD as subtree"
+	% pull the master branch of NMF_APD in subtree mode
+8. git pull -s subtree NMF_APD master
+
