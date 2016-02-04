@@ -1,0 +1,24 @@
+As it is quite complex to start a new git project depending on a ton
+of external libraries, here is a small how-to that describes how I
+created this repository and configured my local machines.
+
+This is not done with submodules, but with subtrees. For more info,
+see https://developer.atlassian.com/blog/2015/05/the-power-of-git-subtree/
+
+1. Created repo nmf-eval on github website.
+2. Locally, git clone https://github.com/jganseman/nmf-eval.git
+
+	% ADD Graham Grindlay's NMFlib
+	% This was first converted into a separate public repo.
+3. git remote add nmflib git://github.com/jganseman/nmflib
+4. git fetch nmflib
+5. git merge -s ours --no-commit nmflib/master
+	% add folder prefix to whatever thing is pulled from this repo:
+6. git read-tree --prefix=nmflib/ -u nmflib/master
+7. git commit -m "Imported nmflib as subtree"
+	% pull the master branch of nmflib in subtree mode
+8. git pull -s subtree nmflib master
+
+Afterwards, the following toolboxes were downloaded and added as proper directories in the repository:
+- Cichocki et al, NMFLAB for Signal Processing
+- Li and Ngom, NMF toolbox for biological data mining
