@@ -22,3 +22,14 @@ see https://developer.atlassian.com/blog/2015/05/the-power-of-git-subtree/
 Afterwards, the following toolboxes were downloaded and added as proper directories in the repository:
 - Cichocki et al, NMFLAB for Signal Processing
 - Li and Ngom, NMF toolbox for biological data mining
+- NMF library from DTU
+
+	% ADD NMF algorithms from LRS library
+3. git remote add lrslibrary git://github.com/andrewssobral/lrslibrary
+4. git fetch lrslibrary
+5. git merge -s ours --no-commit lrslibrary/master
+	% add folder prefix to whatever thing is pulled from this repo:
+6. git read-tree --prefix=lrslibrary/ -u lrslibrary/master
+7. git commit -m "Imported lrslibrary as subtree"
+	% pull the master branch of lrslibrary in subtree mode
+8. git pull -s subtree lrslibrary master	
