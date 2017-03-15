@@ -21,13 +21,13 @@ lrs_conf.ttd_path  = fullfile(lrs_dir,'algorithms','ttd');
 lib_path = fullfile(lrs_dir,'libs');
 lrs_conf.pro_path = fullfile(lib_path,'PROPACK');
 lrs_conf.svd_path = fullfile(lib_path,'SVD');
-lrs_conf.vl_path = fullfile(lib_path,'vlfeat-0.9.19','toolbox','vl_setup');
-lrs_conf.tfocs_path = fullfile(lib_path,'TFOCS-1.3.1');
+lrs_conf.vl_path = fullfile(lib_path,'vlfeat','toolbox','vl_setup');
+lrs_conf.tfocs_path = fullfile(lib_path,'TFOCS');
 lrs_conf.cvx_path = fullfile(lib_path,'cvx');
-lrs_conf.tensor_toolbox_path = fullfile(lib_path,'tensor_toolbox_2.5');
+lrs_conf.tensor_toolbox_path = fullfile(lib_path,'tensor_toolbox');
 lrs_conf.mtt_path = fullfile(lib_path,'mtt');
-lrs_conf.nway_path = fullfile(lib_path,'nway331');
-lrs_conf.poblano_toolbox_path = fullfile(lib_path,'poblano_toolbox_1.1');
+lrs_conf.nway_path = fullfile(lib_path,'nway');
+lrs_conf.poblano_toolbox_path = fullfile(lib_path,'poblano_toolbox');
 %lrs_conf.lightspeed_path = fullfile(lib_path,'lightspeed');
 %lrs_conf.tensorlab_path = fullfile(lib_path,'tensorlab');
 lrs_conf.mmread_path = fullfile(lib_path,'mmread');
@@ -58,7 +58,7 @@ addpath(genpath(fullfile(lrs_conf.manopt_path,'manopt')));
 disp('Running VLFeat setup!');
 run(lrs_conf.vl_path); % add VLFeat
 
-if(~isemptydir(lrs_conf.cvx_path,3))
+if(~isemptydir(lrs_conf.cvx_path,3) && exist(fullfile(lrs_conf.cvx_path,'cvx_setup.m'),'file'))
   addpath(lrs_conf.cvx_path); % add CVX
   disp('Running CVX setup!');
   cvx_setup;

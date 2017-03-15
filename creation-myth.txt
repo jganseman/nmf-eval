@@ -34,7 +34,8 @@ NMF algorithms that were found in Git repositories were added as subtrees:
 6. git read-tree --prefix=lrslibrary/ -u lrslibrary/master
 7. git commit -m "Imported lrslibrary as subtree"
 	% pull the master branch of lrslibrary in subtree mode
-8. git pull -s subtree lrslibrary master
+8. git pull -s subtree -Xsubtree=lrslibrary/ lrslibrary master
+	% NOTE: -Xsubtree is necessary as git auto-identifies the wrong subdir...
 
 	% ADD scattering nmf repository
 
@@ -80,6 +81,18 @@ NMF algorithms that were found in Git repositories were added as subtrees:
 	% pull the master branch of Liu_NMFs in subtree mode
 8. git pull -s subtree Liu_NMFs master
 
+	% TODO: ADD spams-devel https://gitlab.inria.fr/thoth/spams-devel ?
+
+3. git remote add spams https://gitlab.inria.fr/thoth/spams-devel
+4. git fetch spams
+5. git merge -s ours --no-commit spams/master
+	% add folder prefix to whatever thing is pulled from this repo:
+6. git read-tree --prefix=spams/ -u spams/master
+7. git commit -m "Imported spams-devel as subtree"
+	% pull the master branch of spams in subtree mode
+8. git pull -s subtree spams master
+
+
 Also Added Hoyer's nmfpack as proper directory and committed.
 Source of this one was copied from https://github.com/aludnam/MATLAB .
 
@@ -94,7 +107,7 @@ Source of this one was copied from https://github.com/aludnam/MATLAB .
 	% pull the master branch of matlab2tikz in subtree mode
 8. git pull -s subtree matlab2tikz master	
 
-	% ADD our own nsgt-eval repo as subtree for the test data and STFT/CQT/NSGT transforms 
+	% TODO: ADD our own nsgt-eval repo as subtree for the test data and STFT/CQT/NSGT transforms 
 	
 3. git remote add nsgt-eval git://github.com/jganseman/nsgt-eval
 4. git fetch nsgt-eval
@@ -105,6 +118,8 @@ Source of this one was copied from https://github.com/aludnam/MATLAB .
 	% pull the master branch of nsgt-eval in subtree mode
 8. git pull -s subtree nsgt-eval master		
 
+	% TODO: ADD BSS_EVAL, PEASS (and FASST?) toolkits
+	
 
 -------
 
@@ -113,3 +128,5 @@ General useful commands:
 * To list all the remotes: git remote -v
 * To update subtrees: use the 8. line for each repo.
 	(Note (march 2017): git://github.com/Claire-Ling-Liu/NMFs seems not to exist anymore)
+* Reset to previous commit after a merge/commit that hasnt been pushed yet:
+	git reset --hard ORIG_HEAD

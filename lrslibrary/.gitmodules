@@ -1,0 +1,21 @@
+[submodule "libs/cvx"]
+	path = libs/cvx
+	url = https://github.com/cvxr/CVX.git
+[submodule "libs/vlfeat"]
+	path = libs/vlfeat
+	url = https://github.com/vlfeat/vlfeat.git
+[submodule "libs/TFOCS"]
+	path = libs/TFOCS
+	url = https://github.com/cvxr/TFOCS.git
+[submodule "libs/tensor_toolbox"]
+	path = libs/tensor_toolbox
+	url = https://github.com/andrewssobral/tensor_toolbox.git
+[submodule "libs/nway"]
+	path = libs/nway
+	url = https://github.com/andrewssobral/nway.git
+[submodule "libs/poblano_toolbox"]
+	path = libs/poblano_toolbox
+	url = https://github.com/andrewssobral/poblano_toolbox.git
+[submodule "libs/PROPACK"]
+	path = libs/PROPACK
+	url = https://github.com/andrewssobral/PROPACK.git
