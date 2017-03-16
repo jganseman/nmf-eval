@@ -1,0 +1,135 @@
+List of NMF algorithms in this repository:
+
+1. LRSLibrary
+
+- NMF-MU: NMF solved by Multiplicative Updates (Lee and Seung)
+	Impl: Kasper Winther Joergensen (NMF-DTU Toolbox, exact copy)
+	File: lrslibrary/algorithms/nmf/NMF-DTU-Toolbox/nmf_mm.m 
+- NMF-PG: NMF solved by Projected Gradient
+	Impl: Chih-Jen Lin (NMF-DTU Toolbox, exact copy)
+	Note: This 'clean' version contains a license note and is nicely formatted.
+	File: lrslibrary/algorithms/nmf/NMF-DTU-Toolbox/nmf_cjlin.m
+- NMF-ALS: NMF solved by Alternating Least Squares
+	Impl: Lars Kai Hansen (NMF-DTU Toolbox, exact copy)
+	File: lrslibrary/algorithms/nmf/NMF-DTU-Toolbox/nmf_als.m
+- NMF-ALS-OBS: NMF solved by Alternating Least Squares with Optimal Brain Surgeon
+	Impl: Kasper Winther Joergensen (NMF-DTU Toolbox, exact copy)
+	File: lrslibrary/algorithms/nmf/NMF-DTU-Toolbox/nmf_alsobs.m
+- PNMF: Probabilistic Non-negative Matrix Factorization
+	Impl: Lars Kai Hansen (NMF-DTU Toolbox, exact copy)
+	File: lrslibrary/algorithms/nmf/NMF-DTU-Toolbox/nmf_prob.m
+- ManhNMF: Manhattan NMF (Guan et al. 2013)
+	Impl: Naiyang Guan
+	File: lrslibrary/algorithms/nmf/ManhNMF/ManhNMF.m
+- NeNMF: NMF via Nesterovs Optimal Gradient Method (Guan et al. 2012)
+	Impl: Naiyang Guan
+	File: lrslibrary/algorithms/nmf/NeNMF/NeNMF.m
+- LNMF: Spatially Localized NMF (Li et al. 2001)
+	Impl: Naiyang Guan, naar Li.
+	File: lrslibrary/algorithms/nmf/LNMF/LNMF.m
+	Asset: DNMF - Discriminative Nonnegative Matrix Factorization ( S. Zafeiriou, A. Tefas, I. Buciu, and I. Pitas)
+		Impl: Naiyang Guan
+		File: lrslibrary/algorithms/nmf/LNMF/DNFM.m
+	Asset: NMF - Implementation of Lee and Seung
+		Impl: Jean-Philippe Brunet
+		File: lrslibrary/algorithms/nmf/LNMF/NMF.m
+	Asset: Fast Gradient Descent NNLS method (see NPAF.m)
+		Impl: Naiyang Guan
+		File: lrslibrary/algorithms/nmf/LNMF/FGD.m and lrslibrary/algorithms/nmf/LNMF/FGD_H.m
+	Asset: Multiple-stepsize Fast Gradient Descent Method
+		Impl: Naiyang Guan
+		Files: lrslibrary/algorithms/nmf/LNMF/MFGD.m and lrslibrary/algorithms/nmf/LNMF/MFGD_H.m
+- ENMF: Exact NMF (Gillis and Glineur, 2012, "on the geometric interpretation")
+	Impl: N. Gillis ?
+	File: lrslibrary/algorithms/nmf/ENMF/ExactNMF.m
+- nmfLS2: Non-negative Matrix Factorization with sparse matrix (Ji and Eisenstein, 2013)
+	Impl: Yangfeng Ji ?
+	File: lrslibrary/algorithms/nmf/nmfLS2/nmfLS2.m
+- Semi-NMF: Semi Non-negative Matrix Factorization
+	Impl: ?
+	File: lrslibrary/algorithms/nmf/Semi-NMF/seminmf.m
+- Deep-Semi-NMF: Deep Semi Non-negative Matrix Factorization (Trigeorgis et al. 2014)
+	Impl: ?
+	File: lrslibrary/algorithms/nmf/Deep-Semi-NMF/deep_seminmf.m
+- iNMF: Incremental Subspace Learning via NMF (Bucak and Gunsel, 2009)
+	Impl: Serhat Bucak
+	File: lrslibrary/algorithms/nmf/iNMF/inmf.m 
+- DRMF: Direct Robust Matrix Factorization (Xiong et al. 2011)
+	Impl: Liang Xiong
+	File: lrslibrary/algorithms/nmf/DRMF/DRMF.m
+
+2. NMF_APD
+- AccNMF (Gillies and Glineur, 2012, "accelerated mult. up".)
+	File: NMF_APD/Methods/AccNMF/RunME
+- ActiveSet (Jingu Kim and Haesun Park)
+	File: NMF_APD/Methods/ActiveSet/ActiveSet.m
+- AloExactNMF (greedy coordinate descent)
+	Impl: most likely also Hsieh and Dillon
+	File: NMF_APD/Methods/AloExactNMF/AloExactNMF.m
+- AloNMF (Hsieh and Dillon)
+	File: NMF_APD/Methods/AloNMF/AloExactNMF.m
+- FCDMNMF (Cho-Jui Hsieh and Inderjit S. Dhillon)
+	File: NMF_APD/Methods/FCDMNMF/NMF_GCD
+- MU (2 implementations: Brunet (copy of lrslib/LNMF version) and Ross)
+	File: NMF_APD/Methods/MU/LeeNMF
+- NeNMF : Guan et al, (copy of lrslib version)
+	File: NMF_APD/Methods/NeNMF
+- NtNMF : Dongmin Kim (and Dhillon?)
+	File: NMF_APD/Methods/NtNMF/NtNMF.m
+- PGNMF : Lin, Projected Gradient Methods for Nonnegative Matrix Factorization
+	Impl: C.J. Lin?
+	Note: This version is not as well-documented as the one in (lrslib)/NMF-DTU and does not contain license
+	File: NMF_APD/Methods/PGNMF/PCLIN.m
+- QNNMF : Kim, Sra and Dhillon
+	Impl: Dongmin Kim (and Dhillon?)
+	File: NMF_APD/Methods/QNNMF/QnNMF.m
+
+3. nmfdtu - in its entirety included in LRSLIB
+
+4. NMFLABSP (Cichocki et al)
+
+- Regularized Lee-Seung NMF algorithms. Frobenius, KL or Beta-norms. Contains: 
+	- EMML, 
+	- ISRA, 
+	- Kompass algorithm, 
+	- projected pseudo-inverse.
+- Projected gradient algorithms: 
+	- GPCG (Gradient Projected Conjugate Gradient), 
+	- PG (Projected Gradient), 
+	- IPG (Interior Projected Gradient), 
+	- Regularized MRNSD (Minimal Residual Norm Steepest Descent), 
+	- Relaxed Hellinger, 
+	- Projected pseudo-inverse.
+- NMF-ALPHA : Multiplicative algorithms based on the Amari's alpha divergence.
+- SMART algorithms based on the Exponentiated Gradient (EG) and various divergences.
+- Second-order algorithms (mixing matrix is estimated using algorithms based on the quasi-Newton method).
+- Cascade algorithms that estimate the missing matrix as a chain of matrices.
+
+5. nmflib (Grindlay)
+
+- Amari divergence
+- Beta divergence
+- Convex NMF
+- Orthogonal Euclidean NMF (S. Choi)
+- Sparse NMF (Virtanen)
+- Sparse NMF (Eggert, Schmidt)
+
+6. nmfpack (Hoyer)
+
+7. nmftoolbox (Li and Ngom)
+
+8. scattnmf (Bruna, Sprechmann, LeCun)
+
+9. SGNMF (
+
+
+
+TODO see
+http://www.inside-r.org/packages/cran/NMF/docs/seed ?
+http://nimfa.biolab.si/nimfa.methods.html ?
+or citations in
+https://en.wikipedia.org/wiki/Non-negative_matrix_factorization ?
+or 
+https://github.com/bioinfo-cnb ?
+
+Also http://www.cai.sk/ojs/index.php/cai/article/view/161/136 ?
