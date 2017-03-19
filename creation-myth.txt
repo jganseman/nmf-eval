@@ -81,20 +81,9 @@ NMF algorithms that were found in Git repositories were added as subtrees:
 	% pull the master branch of Liu_NMFs in subtree mode
 8. git pull -s subtree Liu_NMFs master
 
-	% TODO: ADD spams-devel https://gitlab.inria.fr/thoth/spams-devel ?
-
-3. git remote add spams https://gitlab.inria.fr/thoth/spams-devel
-4. git fetch spams
-5. git merge -s ours --no-commit spams/master
-	% add folder prefix to whatever thing is pulled from this repo:
-6. git read-tree --prefix=spams/ -u spams/master
-7. git commit -m "Imported spams-devel as subtree"
-	% pull the master branch of spams in subtree mode
-8. git pull -s subtree spams master
-
-
 Also Added Hoyer's nmfpack as proper directory and committed.
 Source of this one was copied from https://github.com/aludnam/MATLAB .
+Added BSS_EVAL 2.1, 3.0 and PEASS 2.0 as subdirectories
 
 	% ADD Matlab2tikz repository as subtree
 
@@ -118,7 +107,8 @@ Source of this one was copied from https://github.com/aludnam/MATLAB .
 	% pull the master branch of nsgt-eval in subtree mode
 8. git pull -s subtree nsgt-eval master		
 
-	% TODO: ADD BSS_EVAL, PEASS (and FASST?) toolkits
+	% TODO: ADD FASST toolkit?
+	% TODO: ADD spams-devel https://gitlab.inria.fr/thoth/spams-devel ? (no direct git access)
 	
 
 -------
