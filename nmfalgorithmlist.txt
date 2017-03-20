@@ -120,7 +120,8 @@ List of NMF algorithms in this repository:
 
 8. scattnmf (Bruna, Sprechmann, LeCun)
 
-- demix_scatt2top: see paper Source Separation with Scattering NMF
+- demix_scatt2top: see paper Source Separation with Scattering NMF.
+- note: depends on SPAMS package (see below)
 
 9. SGNMF (Cai, He, Wu, Han)
 
@@ -129,6 +130,8 @@ List of NMF algorithms in this repository:
 10. spams-matlab (Mairal)
 
 - NMF: see paper Online Learning for Matrix Factorization and Sparse Coding
+
+11. BNMF: Bayesian NMF (Mohammadiha, Smaragdis, Leijon)
 
 
 TODO see
