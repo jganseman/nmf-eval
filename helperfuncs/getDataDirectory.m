@@ -3,11 +3,11 @@ function str = getDataDirectory()
 %   Use this function to define a path to the example data files
 
 if ismac
-    str = './testdata/';
+    str = '../testdata/';
 elseif isunix
-    str = './testdata/';
+    str = '../testdata/';
 elseif ispc
-    str = '.\testdata\';
+    str = '..\testdata\';
 end
 
 % if at C4DM, use str = '/Volumes/c4dm-scratch/jga/data/';
