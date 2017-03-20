@@ -120,16 +120,21 @@ List of NMF algorithms in this repository:
 
 8. scattnmf (Bruna, Sprechmann, LeCun)
 
-9. SGNMF (
+- demix_scatt2top: see paper Source Separation with Scattering NMF
 
+9. SGNMF (Cai, He, Wu, Han)
+
+- SGNMF: see paper Graph-regularized NMF for Data Representation
+
+10. spams-matlab (Mairal)
+
+- NMF: see paper Online Learning for Matrix Factorization and Sparse Coding
 
 
 TODO see
-http://www.inside-r.org/packages/cran/NMF/docs/seed ?
-http://nimfa.biolab.si/nimfa.methods.html ?
+http://nimfa.biolab.si/nimfa.methods.html ? (Python) for more distance measures e.g.
 or citations in
 https://en.wikipedia.org/wiki/Non-negative_matrix_factorization ?
-or 
-https://github.com/bioinfo-cnb ?
-
-Also http://www.cai.sk/ojs/index.php/cai/article/view/161/136 ?
+also ref
+https://github.com/bioinfo-cnb ? (implementation on GPU)
+http://www.cai.sk/ojs/index.php/cai/article/view/161/136 ? (implementation in C)
