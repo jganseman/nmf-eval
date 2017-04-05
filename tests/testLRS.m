@@ -29,6 +29,8 @@ inputfile = 'pianoclip4notes.wav';
 maxiter = 100;
 nrcomponents = 4;
 
+myverbose = 1;
+
 disp('--- Reading input file, monofy and zero-pad. ---')
 
 % Read file
@@ -72,7 +74,7 @@ phase = MySTFT./MySTFTabs;
 % function [ Z, H, dnorm ] = deep_seminmf ( X, layers, varargin )
 % Optional arguments : 'z0' 'h0' 'bUpdateH' 'bUpdateLastH' 'maxiter' 'TolFun', 'verbose', 'bUpdateZ', 'cache' ...
 tic;
-[ W, H, dnorm ] = deep_seminmf ( MySTFTabs, nrcomponents, 'maxiter', maxiter, 'verbose', 1, 'TolFun', eps);
+[ W, H, dnorm ] = deep_seminmf ( MySTFTabs, nrcomponents, 'maxiter', maxiter, 'verbose', myverbose, 'TolFun', eps);
 %note: default TolFun is 10e-5, what is the effect on logarithmic audio data?
 lrs_dsnmf_time=toc;
 
@@ -84,11 +86,16 @@ lrs_dsnmf=W*H;
 
 fprintf('      LRS-DSNMF Done in time: %f \n',lrs_dsnmf_time);
 
+%% EVALUATE lrslibrary's Deep-Semi-Nmf
 %inverse transform and cut to size
 lrs_dsnmf_newsig = istft_catbox(lrs_dsnmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
 lrs_dsnmf_newsig = lrs_dsnmf_newsig(fftsize+1:fftsize+length(origMix));
 
-
+%has negative values?
+lrs_dsnmf_W_neg = min(min(W))<0;
+lrs_dsnmf_H_neg = min(min(H))<0;
+fprintf('      LRS-DSNMF spectra w/ neg values?: %d \n',lrs_dsnmf_W_neg);
+fprintf('      LRS-DSNMF coeffs w/ neg values?: %d \n',lrs_dsnmf_H_neg);
 
 %compute reconstruction error
 rec_err = norm(origMix-lrs_dsnmf_newsig)/norm(origMix);
@@ -97,7 +104,5 @@ fprintf('      LRS-DSNMF Normalized Reconstruction Error: %e \n',rec_err);
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_dsnmf_SDR lrs_dsnmf_SIR lrs_dsnmf_SAR] = bss_eval_sources(lrs_dsnmf_newsig',origMix');
 fprintf('      LRS-DSNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_dsnmf_SDR, lrs_dsnmf_SIR, lrs_dsnmf_SAR);
-
-%%
 
 disp('--- Finished ---')
