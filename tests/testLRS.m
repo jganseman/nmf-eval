@@ -140,6 +140,8 @@ lrs_drmf_time=toc;
 [W, s, H] = svdex(lrs_drmf, nrcomponents);
 H=H';
 
+fprintf('      LRS-DRMF Done in time: %f \n',lrs_dsnmf_time);
+
 %% EVALUATE lrslibrary's DRMF
 %inverse transform and cut to size
 lrs_drmf_newsig = istft_catbox(lrs_drmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
@@ -158,6 +160,39 @@ fprintf('      LRS-DRMF Normalized Reconstruction Error: %e \n',rec_err);
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_drmf_SDR lrs_drmf_SIR lrs_drmf_SAR] = bss_eval_sources(lrs_drmf_newsig',origMix');
 fprintf('      LRS-DRMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_drmf_SDR, lrs_drmf_SIR, lrs_drmf_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST lrslibrary's ENMF: Exact NMF (Gillis and Glineur, 2012)
+%function [V,W] = ExactNMF(S, r, max_attempts)
+
+tic;
+[W,H] = ExactNMF(MySTFTabs, nrcomponents, maxiter);  
+lrs_enmf_time=toc;
+
+lrs_enmf=W*H;
+
+fprintf('      LRS-ENMF Done in time: %f \n',lrs_enmf_time);
+
+%% EVALUATE lrslibrary's ENMF
+%inverse transform and cut to size
+lrs_enmf_newsig = istft_catbox(lrs_enmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_enmf_newsig = lrs_enmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_enmf_W_neg = min(min(W))<0;
+lrs_enmf_H_neg = min(min(H))<0;
+fprintf('      LRS-ENMF spectra w/ neg values?: %d \n',lrs_enmf_W_neg);
+fprintf('      LRS-ENMF coeffs w/ neg values?: %d \n',lrs_enmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_enmf_newsig)/norm(origMix);
+fprintf('      LRS-ENMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_enmf_SDR lrs_enmf_SIR lrs_enmf_SAR] = bss_eval_sources(lrs_enmf_newsig',origMix');
+fprintf('      LRS-DRMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_enmf_SDR, lrs_enmf_SIR, lrs_enmf_SAR);
 
 disp('--- Finished ---')
 
