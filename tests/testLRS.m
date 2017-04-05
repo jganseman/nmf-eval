@@ -106,3 +106,58 @@ fprintf('      LRS-DSNMF Normalized Reconstruction Error: %e \n',rec_err);
 fprintf('      LRS-DSNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_dsnmf_SDR, lrs_dsnmf_SIR, lrs_dsnmf_SAR);
 
 disp('--- Finished ---')
+
+%% TEST lrslibrary's DRMF: Direct Robust Matrix Factorization (Xiong et al. 2011)
+%function [ L, S ] = DRMF(M, K, E, options)
+% options: 
+%     init: the initial L. default the raw SVD.
+%     type: 'E' for element outliers, 'R' for row outliers, 'C' for column outliers. default 'E'.
+%     max_iter: max iteration. default 100.
+%     epsilon: relative change of objective to stop the iteration. default 1e-4.
+%     verbose: show info or not
+
+%%% initialization
+% Note: LRS uses the following two lines, instead of default init.
+% indeed gives better results when initialized with inexact_alm_rpca.
+lambda = 1/sqrt(max(size(MySTFTabs)));
+L_rpca = inexact_alm_rpca(MySTFTabs, lambda, 1e-5, 10);     %matrix, lambda, tol, maxiter
+%sv = svdex(L_rpca);
+%rk = EffRank(sv, 0.999);
+options.max_iter=maxiter;
+options.epsilon=eps;
+options.verbose=myverbose;
+
+%%% run
+options.init = L_rpca;
+tic;
+[lrs_drmf,S] = DRMF(MySTFTabs, nrcomponents, 0.1, options);  % 0.1 = max 10% of outliers
+% S = full(S);
+%%% end
+lrs_drmf_time=toc;
+
+% L is our reconstructed low-rank approximation. 
+% To obtain individual components, do SVD:
+[W, s, H] = svdex(lrs_drmf, nrcomponents);
+H=H';
+
+%% EVALUATE lrslibrary's DRMF
+%inverse transform and cut to size
+lrs_drmf_newsig = istft_catbox(lrs_drmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_drmf_newsig = lrs_drmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_drmf_W_neg = min(min(W))<0;
+lrs_drmf_H_neg = min(min(H))<0;
+fprintf('      LRS-DRMF spectra w/ neg values?: %d \n',lrs_drmf_W_neg);
+fprintf('      LRS-DRMF coeffs w/ neg values?: %d \n',lrs_drmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_drmf_newsig)/norm(origMix);
+fprintf('      LRS-DRMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_drmf_SDR lrs_drmf_SIR lrs_drmf_SAR] = bss_eval_sources(lrs_drmf_newsig',origMix');
+fprintf('      LRS-DRMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_drmf_SDR, lrs_drmf_SIR, lrs_drmf_SAR);
+
+disp('--- Finished ---')
+
