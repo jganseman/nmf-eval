@@ -16,7 +16,8 @@
 
 %%
 clear;
-addpath(genpath('../'));     % add subdirectories to path
+addpath(genpath('../'));     % add subdirectories to path. 
+    % Make sure you are in the '/tests' folder, not in the nmf-eval root!
 
 
 %% Parameters
@@ -168,7 +169,7 @@ disp('--- Finished ---')
 %function [V,W] = ExactNMF(S, r, max_attempts)
 
 tic;
-[W,H] = ExactNMF(MySTFTabs, nrcomponents, maxiter);  
+[W,H] = ExactNMF(MySTFTabs, nrcomponents, 20); % nr attempts has nothing to do with max_iter  
 lrs_enmf_time=toc;
 
 lrs_enmf=W*H;
@@ -192,7 +193,74 @@ fprintf('      LRS-ENMF Normalized Reconstruction Error: %e \n',rec_err);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_enmf_SDR lrs_enmf_SIR lrs_enmf_SAR] = bss_eval_sources(lrs_enmf_newsig',origMix');
-fprintf('      LRS-DRMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_enmf_SDR, lrs_enmf_SIR, lrs_enmf_SAR);
+fprintf('      LRS-ENMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_enmf_SDR, lrs_enmf_SIR, lrs_enmf_SAR);
 
 disp('--- Finished ---')
 
+%% TEST lrslibrary's iNMF: Incremental Subspace Learning via NMF (Bucak and Gunsel, 2009)
+%function [W_new, h, A, B] = inmf( V_new, W, h, A, B, rdim, beta, alpha, maxiter)
+%INPUTS:
+%   V_new: new data sample, a column vector (d x 1)
+%   W: Mixing Matrix -or matrix of basis vectors- (d x rdim)
+%   h: initialization for the new encoding vector, a column vector (rdim x 1),
+%   A: Matrix to store cummulative V*H' 
+%   B: Matrix to store cummulative H*H'
+%   rdim: factorization rank
+%   beta: weighting coefficient for contribution of initial samples (i.e. A=beta*A+alpha*V_new*h';B=beta*B+alpha*h*h')
+%   alpha: weighting coefficient for contribution of the new sample
+%   maxiter: maximum number of iterations
+%OUTPUTS
+%   W_new: Updated mixing matrix 
+%   h: Updated encoding vector
+%   A, B: Updated A,B matrices
+
+% Note: doing this as in the run_alg.m file in its subdir. It relies on 
+% NMF by Hoyer's implementation. Copied in this dir under different name
+% to resolve namespace clashes
+
+M = MySTFTabs;
+
+% Execute NMF for the first n samples
+n = 10; % take first 10 samples
+[W,H] = testhelper_nmf_boyer(M(:,1:n), nrcomponents, 0, maxiter);
+L = W*H;
+% Now we can execute iNMF on each new samples
+%maxiter = 50;
+tic;
+A = M(:,1:n)*H';
+B = H*H';
+h = H(:,end); % Warm start for h
+for i = n+1:size(M,2)
+  %disp(i);
+  M_new = M(:,i);
+  [W_new,h,A,B] = inmf(M_new,W,h,A,B,nrcomponents,0.9,0.1,maxiter);
+  % H_store(:,i-n) = h; % Just for demonstration
+  L(:,end+1) = W_new*h;
+end
+lrs_inmf_time=toc;
+S = M - L;
+
+fprintf('      LRS-iNMF Done in time: %f \n',lrs_inmf_time);
+
+%% EVALUATE lrslibrary's iNMF
+lrs_inmf=L;
+
+%inverse transform and cut to size
+lrs_inmf_newsig = istft_catbox(lrs_inmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_inmf_newsig = lrs_inmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_inmf_W_neg = min(min(W_new))<0;
+lrs_inmf_H_neg = min(min(h))<0;
+fprintf('      LRS-iNMF spectra w/ neg values?: %d \n',lrs_inmf_W_neg);
+fprintf('      LRS-iNMF coeffs w/ neg values?: %d \n',lrs_inmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_inmf_newsig)/norm(origMix);
+fprintf('      LRS-iNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_inmf_SDR lrs_inmf_SIR lrs_inmf_SAR] = bss_eval_sources(lrs_inmf_newsig',origMix');
+fprintf('      LRS-iNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_inmf_SDR, lrs_inmf_SIR, lrs_inmf_SAR);
+
+disp('--- Finished ---')
