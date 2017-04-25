@@ -4,7 +4,7 @@
 % Hoer's code (P. O. Hoyer. Non-negative Matrix Factorization with sparseness constraints. 
 % Journal of Machine Learning Research  5:1457-1469, 2004.) is modified
 
-function [W, H, objhistory, objhistory_v] = testhelper_nmf_boyer( V, rdim, showflag, ttt )
+function [W, H, objhistory, objhistory_v] = nmf_boyer( V, rdim, showflag, ttt )
 %% INPUT
 % V: data matrix
 % rdim : matrix factorization rank

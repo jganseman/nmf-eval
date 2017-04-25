@@ -222,7 +222,7 @@ M = MySTFTabs;
 
 % Execute NMF for the first n samples
 n = 10; % take first 10 samples
-[W,H] = testhelper_nmf_boyer(M(:,1:n), nrcomponents, 0, maxiter);
+[W,H] = nmf_boyer(M(:,1:n), nrcomponents, 0, maxiter);
 L = W*H;
 % Now we can execute iNMF on each new samples
 %maxiter = 50;
@@ -262,5 +262,53 @@ fprintf('      LRS-iNMF Normalized Reconstruction Error: %e \n',rec_err);
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_inmf_SDR lrs_inmf_SIR lrs_inmf_SAR] = bss_eval_sources(lrs_inmf_newsig',origMix');
 fprintf('      LRS-iNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_inmf_SDR, lrs_inmf_SIR, lrs_inmf_SAR);
+
+disp('--- Finished ---')
+
+%this routine made a few extra directories. Force remove them
+rmdir('initials', 's');
+
+%% TEST lrslibrary's LMNF: Spatially Localized NMF (Li et al. 2001)
+% Reference:
+%   S. Z. Li, X. Hou, H. Zhang, and Q. Cheng, "Learning spatially
+%   localized, parts-based representation," in IEEE Conference on Computer Vision and Pattern Recognition, 2001, pp. 207–212.
+
+% Relies on a Mex-function to compute kullback-leibler divergence: KLC.cpp
+% install a C++ compiler and run mex -setup 
+% then compile (run mex) in /lrslibrary/algorithms/nmf/LNMF
+% (function signature was erroneous so fixed and copied in this dir)
+
+option.verbose = myverbose;
+% implementation from LRS has the following options built-in:
+% niter = 3000;     % maximum number of iterations
+% precision = 1e-4;
+tic;
+[W,H] = LNMF(MySTFTabs,nrcomponents,option);
+lrs_lnmf_time=toc;
+
+lrs_lnmf = W * H;
+S = MySTFTabs - lrs_lnmf;
+
+fprintf('      LRS-LNMF Done in time: %f \n',lrs_lnmf_time);
+
+%% EVALUATE lrslibrary's LNMF
+
+%inverse transform and cut to size
+lrs_lnmf_newsig = istft_catbox(lrs_lnmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_lnmf_newsig = lrs_lnmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_lnmf_W_neg = min(min(W))<0;
+lrs_lnmf_H_neg = min(min(H))<0;
+fprintf('      LRS-LNMF spectra w/ neg values?: %d \n',lrs_lnmf_W_neg);
+fprintf('      LRS-LNMF coeffs w/ neg values?: %d \n',lrs_lnmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_lnmf_newsig)/norm(origMix);
+fprintf('      LRS-LNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_lnmf_SDR lrs_lnmf_SIR lrs_lnmf_SAR] = bss_eval_sources(lrs_lnmf_newsig',origMix');
+fprintf('      LRS-iNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_lnmf_SDR, lrs_lnmf_SIR, lrs_lnmf_SAR);
 
 disp('--- Finished ---')
