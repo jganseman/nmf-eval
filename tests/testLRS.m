@@ -365,12 +365,8 @@ disp('--- Finished ---')
 %               dlta - stopping criteria of block coordinate descent.
 
 % Note: many options possible, could be interesting to investigate deeper!
-manhverbose=0;
-if (myverbose) 
-    manhverbose = 2;
-end
 
-[W,H,lrs_manh_iter,lrs_manhnmf_time] = ManhNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VB_OUTR', manhverbose);
+[W,H,lrs_manh_iter,lrs_manhnmf_time] = ManhNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VB_OUTR', myverbose*2);
 lrs_manhnmf = W' * H;
 S = MySTFTabs - lrs_manhnmf;
 
@@ -395,5 +391,80 @@ fprintf('      LRS-ManhNMF Normalized Reconstruction Error: %e \n',rec_err);
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_manhnmf_SDR lrs_manhnmf_SIR lrs_manhnmf_SAR] = bss_eval_sources(lrs_manhnmf_newsig',origMix');
 fprintf('      LRS-ManhNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_manhnmf_SDR, lrs_manhnmf_SIR, lrs_manhnmf_SAR);
+
+disp('--- Finished ---')
+
+%% TEST lrslibrary's NeNMF: NMF via Nesterov's Optimal Gradient Method (Guan et al. 2012)
+%  N. Guan, D. Tao, Z. Luo, and B. Yuan, "NeNMF: An Optimal Gradient Method
+%  for Non-negative Matrix Factorization", IEEE Transactions on Signal
+%  Processing, Vol. 60, No. 6, PP. 2882-2898, Jun. 2012. (DOI:
+%  10.1109/TSP.2012.2190406)
+
+%function [W,H,iter,elapse,HIS]=NeNMF(V,r,varargin)
+% <Inputs>
+%        V : Input data matrix (m x n)
+%        r : Target low-rank
+%
+%        (Below are optional arguments: can be set by providing name-value pairs)
+%        MAX_ITER : Maximum number of iterations. Default is 1,000.
+%        MIN_ITER : Minimum number of iterations. Default is 10.
+%        MAX_TIME : Maximum amount of time in seconds. Default is 100,000.
+%        W_INIT : (m x r) initial value for W.
+%        H_INIT : (r x n) initial value for H.
+%        TYPE : Algorithm type (Default is 'PLAIN'),
+%               'PLAIN' - NeNMF (min{.5*||V-W*H||_F^2,s.t.,W >= 0 and H >= 0}.),
+%               'L1R' - L1-norm regularized NeNMF (min{.5*||V-W*H||_F^2+beta*||H||_1,s.t.,W >= 0 and H >= 0}.),
+%               'L2R' - L2-norm regularized NeNMF (min{.5*||V-W*H||_F^2+.5*beta*||H||_F^2,s.t.,W >= 0 and H >= 0}.),
+%               'MR' - manifold regularized NeNMF (min{.5*||V-W*H||_F^2+.5*beta*TR(H*Lp*H^T),s.t.,W >= 0 and H >= 0}.).
+%        BETA : Tradeoff parameter over regularization term. Default is 1e-3.
+%        S_MTX : Similarity matrix constructed by 'constructW'.
+%        TOL : Stopping tolerance. Default is 1e-5. If you want to obtain a more accurate solution, decrease TOL and increase MAX_ITER at the same time.
+%        VERBOSE : 0 (default) - No debugging information is collected.
+%                  1 (debugging purpose) - History of computation is returned by 'HIS' variable.
+%                  2 (debugging purpose) - History of computation is additionally printed on screen.
+% <Outputs>
+%        W : Obtained basis matrix (m x r).
+%        H : Obtained coefficients matrix (r x n).
+%        iter : Number of iterations.
+%        elapse : CPU time in seconds.
+%        HIS : (debugging purpose) History of computation,
+%               niter - total iteration number spent for Nesterov's optimal
+%               gradient method,
+%               cpus - CPU seconds at iteration rounds,
+%               objf - objective function values at iteration rounds,
+%               prjg - projected gradient norm at iteration rounds.
+
+% Note: a copy of this algorithm with different header is included in NMF_APD
+% To resolve clash, remove that dir from the path. Take lrslibrary as default.
+rmpath('../NMF_APD/Methods/NeNMF');
+
+[W,H,lrs_ne_iter,lrs_nenmf_time] = NeNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VERBOSE', myverbose*2);
+lrs_nenmf = W * H;
+S = MySTFTabs - lrs_nenmf;
+
+fprintf('      LRS-NeNMF Done in time: %f \n',lrs_nenmf_time);
+
+% And add the removed path again, so we are reminded a next time.
+addpath('../NMF_APD/Methods/NeNMF');
+
+%% EVALUATE lrslibrary's NeNMF
+
+%inverse transform and cut to size
+lrs_nenmf_newsig = istft_catbox(lrs_nenmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_nenmf_newsig = lrs_nenmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_nenmf_W_neg = min(min(W))<0;
+lrs_nenmf_H_neg = min(min(H))<0;
+fprintf('      LRS-NeNMF spectra w/ neg values?: %d \n',lrs_nenmf_W_neg);
+fprintf('      LRS-NeNMF coeffs w/ neg values?: %d \n',lrs_nenmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_nenmf_newsig)/norm(origMix);
+fprintf('      LRS-NeNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_nenmf_SDR lrs_nenmf_SIR lrs_nenmf_SAR] = bss_eval_sources(lrs_nenmf_newsig',origMix');
+fprintf('      LRS-NeNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_nenmf_SDR, lrs_nenmf_SIR, lrs_nenmf_SAR);
 
 disp('--- Finished ---')
