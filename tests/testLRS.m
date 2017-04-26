@@ -168,8 +168,10 @@ disp('--- Finished ---')
 %% TEST lrslibrary's ENMF: Exact NMF (Gillis and Glineur, 2012)
 %function [V,W] = ExactNMF(S, r, max_attempts)
 
+% built-in tolerance: 1e-6
+% built-in iterations: 1000 in HALS subroutine
 tic;
-[W,H] = ExactNMF(MySTFTabs, nrcomponents, 20); % nr attempts has nothing to do with max_iter  
+[W,H] = ExactNMF(MySTFTabs, nrcomponents, maxiter); % nr attempts has nothing to do with max_iter though 
 lrs_enmf_time=toc;
 
 lrs_enmf=W*H;
@@ -366,7 +368,7 @@ disp('--- Finished ---')
 
 % Note: many options possible, could be interesting to investigate deeper!
 
-[W,H,lrs_manh_iter,lrs_manhnmf_time] = ManhNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VB_OUTR', myverbose*2);
+[W,H,lrs_manh_iter,lrs_manhnmf_time] = ManhNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VB_OUTR', myverbose*2, 'TOL_OUTR', eps);
 lrs_manhnmf = W' * H;
 S = MySTFTabs - lrs_manhnmf;
 
@@ -438,7 +440,7 @@ disp('--- Finished ---')
 % To resolve clash, remove that dir from the path. Take lrslibrary as default.
 rmpath('../NMF_APD/Methods/NeNMF');
 
-[W,H,lrs_ne_iter,lrs_nenmf_time] = NeNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VERBOSE', myverbose*2);
+[W,H,lrs_ne_iter,lrs_nenmf_time] = NeNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VERBOSE', myverbose*2, 'TOL', eps);
 lrs_nenmf = W * H;
 S = MySTFTabs - lrs_nenmf;
 
@@ -466,5 +468,81 @@ fprintf('      LRS-NeNMF Normalized Reconstruction Error: %e \n',rec_err);
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_nenmf_SDR lrs_nenmf_SIR lrs_nenmf_SAR] = bss_eval_sources(lrs_nenmf_newsig',origMix');
 fprintf('      LRS-NeNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_nenmf_SDR, lrs_nenmf_SIR, lrs_nenmf_SAR);
+
+disp('--- Finished ---')
+
+%% NMF-ALS: part of NMF-DTU
+%% NMF-ALS-OBS: part of NMF-DTU
+%% NMF-DTU-Toolbox: see separate file for tests
+
+%% Test nmfLS2: Non-negative Matrix Factorization with sparse matrix (Ji and Eisenstein, 2013)
+% function [W, H, err_ratio, err_v] = nmfLS2(V, K, max_iter, use_nndsvd, tol, step)
+
+tic;
+[W, H, err_ratio, err_v] = nmfLS2(MySTFTabs, nrcomponents, maxiter, 1, eps);
+lrs_ls2_time=toc;
+
+lrs_ls2 = W * H;
+S = MySTFTabs - lrs_ls2;
+fprintf('      LRS-nmfLS2 Done in time: %f \n',lrs_ls2_time);
+
+
+%% EVALUATE lrslibrary's nmfLS2
+
+%inverse transform and cut to size
+lrs_ls2_newsig = istft_catbox(lrs_ls2.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_ls2_newsig = lrs_ls2_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_ls2_W_neg = min(min(W))<0;
+lrs_ls2_H_neg = min(min(H))<0;
+fprintf('      LRS-nmfLS2 spectra w/ neg values?: %d \n',lrs_ls2_W_neg);
+fprintf('      LRS-nmfLS2 coeffs w/ neg values?: %d \n',lrs_ls2_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_ls2_newsig)/norm(origMix);
+fprintf('      LRS-nmfLS2 Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_ls2_SDR lrs_ls2_SIR lrs_ls2_SAR] = bss_eval_sources(lrs_ls2_newsig',origMix');
+fprintf('      LRS-nmfLS2 SDR: %f \t SIR: %f \t SAR: %f \n',lrs_ls2_SDR, lrs_ls2_SIR, lrs_ls2_SAR);
+
+disp('--- Finished ---')
+
+%% NMF-MU: part of NMF-DTU
+%% NMF-PG: part of NMF-DTU
+%% PNMF: part of NMF-DTU
+
+%% Test Semi-NMF: Semi Non-negative Matrix Factorization (Trigeorgis et al. 2014)
+% function [  Z, H, dnorm, AC, MIhat  ] = seminmf( X, k, varargin )
+% optional args: 'z0' 'h0' 'bUpdateH' 'maxiter' 'TolFun' 'bUpdateZ' 'verbose'
+
+tic;
+[ W, H, dnorm ] = seminmf ( MySTFTabs, nrcomponents, 'maxiter', maxiter, 'verbose', myverbose, 'TolFun', eps);
+%note: default TolFun is 10e-5, what is the effect on logarithmic audio data?
+lrs_snmf_time=toc;
+
+lrs_snmf=W*H;
+
+fprintf('      LRS-SNMF Done in time: %f \n',lrs_snmf_time);
+
+%% EVALUATE lrslibrary's Deep-Semi-Nmf
+%inverse transform and cut to size
+lrs_snmf_newsig = istft_catbox(lrs_snmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_snmf_newsig = lrs_snmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_snmf_W_neg = min(min(W))<0;
+lrs_snmf_H_neg = min(min(H))<0;
+fprintf('      LRS-SNMF spectra w/ neg values?: %d \n',lrs_snmf_W_neg);
+fprintf('      LRS-SNMF coeffs w/ neg values?: %d \n',lrs_snmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_snmf_newsig)/norm(origMix);
+fprintf('      LRS-SNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_snmf_SDR lrs_snmf_SIR lrs_snmf_SAR] = bss_eval_sources(lrs_snmf_newsig',origMix');
+fprintf('      LRS-SNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_snmf_SDR, lrs_snmf_SIR, lrs_snmf_SAR);
 
 disp('--- Finished ---')
