@@ -309,6 +309,91 @@ fprintf('      LRS-LNMF Normalized Reconstruction Error: %e \n',rec_err);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [lrs_lnmf_SDR lrs_lnmf_SIR lrs_lnmf_SAR] = bss_eval_sources(lrs_lnmf_newsig',origMix');
-fprintf('      LRS-iNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_lnmf_SDR, lrs_lnmf_SIR, lrs_lnmf_SAR);
+fprintf('      LRS-LNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_lnmf_SDR, lrs_lnmf_SIR, lrs_lnmf_SAR);
+
+disp('--- Finished ---')
+
+%% TEST lrslibrary's ManhNMF: Manhattan NMF (Guan et al. 2013)
+%  [2] N. Guan, D. Tao, Z. Luo, and J. Shawe-taylor, "MahNMF: Manhattan
+%  Non-negative Matrix Factorization," Submitted to Journal of Machine Learning Research, 2013.
+
+%function [W,H,iter,elapse,HIS]=ManhNMF(X,r,varargin)
+% <Inputs>
+%        X : Input data matrix (m x n)
+%        r : Target low-rank
+%
+%        (Below are optional arguments: can be set by providing name-value pairs)
+%        MAX_ITER : Maximum number of iterations. Default is 1,000.
+%        MIN_ITER : Minimum number of iterations. Default is 10.
+%        MAX_TIME : Maximum amount of time in seconds. Default is 100,000.
+%        W_INIT : (m x r) initial value for W.
+%        H_INIT : (r x n) initial value for H.
+%        LAM_INIT : initial value of smoothness parameter. Default is 1.
+%        MDL_TYPE : Model type (Default is 'PLAIN'),
+%               'PLAIN' - MahNMF (min{||X-W^T*H||_1,s.t.,W >= 0 and H >= 0}.),
+%               'BXC' - Box Constrained MahNMF (min{||X-W^T*H||_1,s.t.,1 >= W >= 0 and 1 >= H >= 0}.),
+%               'MNR' - Manifold Regularized MahNMF
+%               (min{||X-W^T*H||_1+.5*beta*TR(H*Lp*H^T),s.t.,W >= 0 and H >= 0}.),
+%               'GSP' - Group Sparse MahNMF
+%               (min{||X-W^T*H||_1+.5*beta*\sum_{g\in G}||W^[g]||_{1,p},s.t.,W >= 0 and H >= 0}.),
+%               'SYM' - Symmetric MahNMF (min{||X-H*H^T||_1,s.t., H >= 0}.).
+%        ALG_TYPE : Algorithm type (Default is 'AGD'),
+%               'AGD' - Accelerated Gradient Descent,
+%               'RRI' - Rank-one Residue Iteration.
+%        BETA : Tradeoff parameter over regularization term. Default is 1e-3.
+%        SIM_MTX : Similarity matrix constructed by 'constructW'.
+%        GPP_MTX : Group pattern for boundary of all groups.
+%        TOL_INNR : Stopping tolerance of inner iterations. Default is 1e-2.
+%        TOL_OUTR : Stopping tolerance of outer iterations. Default is 1e-3.
+%               If you want to obtain a more accurate solution, decrease TOL_INNR or TOL_OUTR and increase MAX_ITER at the same time.
+%        VB_OUTR : 0 (default) - No debugging information is collected.
+%                  1 (debugging purpose) - History of computation is returned by 'HIS' variable.
+%                  2 (debugging purpose) - History of computation is additionally printed on screen.
+%        VB_INNR : 0 (default) - No debugging information is collected.
+%                  1 (debugging purpose) - History of computation is returned by 'HIS' variable.
+%                  2 (debugging purpose) - History of computation is additionally printed on screen.
+% <Outputs>
+%        W : Obtained basis matrix (r x m).
+%        H : Obtained coefficients matrix (r x n).
+%        iter : Number of iterations.
+%        elapse : CPU time in seconds.
+%        HIS : (debugging purpose) History of computation,
+%               niter - total iteration number spent for Nesterov's optimal
+%               gradient method,
+%               cpus - CPU seconds at iteration rounds,
+%               objf - objective function values at iteration rounds,
+%               dlta - stopping criteria of block coordinate descent.
+
+% Note: many options possible, could be interesting to investigate deeper!
+manhverbose=0;
+if (myverbose) 
+    manhverbose = 2;
+end
+
+[W,H,lrs_manh_iter,lrs_manhnmf_time] = ManhNMF(MySTFTabs,nrcomponents, 'MAX_ITER', maxiter, 'VB_OUTR', manhverbose);
+lrs_manhnmf = W' * H;
+S = MySTFTabs - lrs_manhnmf;
+
+fprintf('      LRS-ManhNMF Done in time: %f \n',lrs_manhnmf_time);
+
+%% EVALUATE lrslibrary's ManhNMF
+
+%inverse transform and cut to size
+lrs_manhnmf_newsig = istft_catbox(lrs_manhnmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+lrs_manhnmf_newsig = lrs_manhnmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+lrs_manhnmf_W_neg = min(min(W))<0;
+lrs_manhnmf_H_neg = min(min(H))<0;
+fprintf('      LRS-ManhNMF spectra w/ neg values?: %d \n',lrs_manhnmf_W_neg);
+fprintf('      LRS-ManhNMF coeffs w/ neg values?: %d \n',lrs_manhnmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-lrs_manhnmf_newsig)/norm(origMix);
+fprintf('      LRS-ManhNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[lrs_manhnmf_SDR lrs_manhnmf_SIR lrs_manhnmf_SAR] = bss_eval_sources(lrs_manhnmf_newsig',origMix');
+fprintf('      LRS-ManhNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_manhnmf_SDR, lrs_manhnmf_SIR, lrs_manhnmf_SAR);
 
 disp('--- Finished ---')
