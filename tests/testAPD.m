@@ -98,7 +98,7 @@ tic;
 apd_muacc_time=toc;
 apd_muacc = W*H;
 
-fprintf('      APD_MUacc Done in time: %f \n',apd_muacc_time);
+fprintf('      APD-MUacc Done in time: %f \n',apd_muacc_time);
 
 %% EVALUATE APD's AccNMF MUacc
 %inverse transform and cut to size
@@ -146,7 +146,7 @@ tic;
 apd_pglinacc_time=toc;
 apd_pglinacc = W*H;
 
-fprintf('      APD_PGLINacc Done in time: %f \n',apd_pglinacc_time);
+fprintf('      APD-PGLINacc Done in time: %f \n',apd_pglinacc_time);
 
 %% EVALUATE APD's AccNMF PGLINacc
 %inverse transform and cut to size
@@ -198,7 +198,7 @@ tic;
 apd_halsacc_time=toc;
 apd_halsacc = W*H;
 
-fprintf('      APD_HALSacc Done in time: %f \n',apd_halsacc_time);
+fprintf('      APD-HALSacc Done in time: %f \n',apd_halsacc_time);
 
 %% EVALUATE APD's AccNMF HALSacc
 %inverse transform and cut to size
@@ -262,7 +262,7 @@ tic;
 apd_actset_time=toc;
 apd_actset = W*H;
 
-fprintf('      APD_ActiveSet Done in time: %f \n',apd_actset_time);
+fprintf('      APD-ActiveSet Done in time: %f \n',apd_actset_time);
 
 %% EVALUATE APD's ActiveSet
 %inverse transform and cut to size
@@ -299,7 +299,7 @@ tic;
 apd_blockp_time=toc;
 apd_blockp = W*H;
 
-fprintf('      APD_BlockPivot Done in time: %f \n',apd_blockp_time);
+fprintf('      APD-BlockPivot Done in time: %f \n',apd_blockp_time);
 
 %% EVALUATE APD's BlockPivot
 %inverse transform and cut to size
@@ -309,15 +309,341 @@ apd_blockp_newsig = apd_blockp_newsig(fftsize+1:fftsize+length(origMix));
 %has negative values?
 apd_blockp_W_neg = min(min(W))<0;
 apd_blockp_H_neg = min(min(H))<0;
-fprintf('      APD-ActiveSet spectra w/ neg values?: %d \n',apd_blockp_W_neg);
-fprintf('      APD-ActiveSet coeffs w/ neg values?: %d \n',apd_blockp_H_neg);
+fprintf('      APD-BlockPivot spectra w/ neg values?: %d \n',apd_blockp_W_neg);
+fprintf('      APD-BlockPivot coeffs w/ neg values?: %d \n',apd_blockp_H_neg);
 
 %compute reconstruction error
 rec_err = norm(origMix-apd_blockp_newsig)/norm(origMix);
-fprintf('      APD-ActiveSet Normalized Reconstruction Error: %e \n',rec_err);
+fprintf('      APD-BlockPivot Normalized Reconstruction Error: %e \n',rec_err);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
 [apd_blockp_SDR apd_blockp_SIR apd_blockp_SAR] = bss_eval_sources(apd_blockp_newsig',origMix');
-fprintf('      APD-ActiveSet SDR: %f \t SIR: %f \t SAR: %f \n',apd_blockp_SDR, apd_blockp_SIR, apd_blockp_SAR);
+fprintf('      APD-BlockPivot SDR: %f \t SIR: %f \t SAR: %f \n',apd_blockp_SDR, apd_blockp_SIR, apd_blockp_SAR);
 
 disp('--- Finished ---')
+
+
+%% TEST APD's AloExactNMF 
+% Hsieh and Dillon? Possibly adapted by Khuong.
+% Nonnegative Matrix Factorization (NMF) via Anti-lopsided + Greedy Coordinate Descent
+% NOTE: the code from NMF_APD library is definitely not the original Hsieh/Dillon code
+% function [W, H, HIS] = AloExactNMF(V, opts)
+%		V: the input n by m dense matrix
+%		k: the specified rank
+%		opts.maxIter: maximum number of iterations
+%		opts.W0: initial of W (n by k dense matrix)
+%		opts.H0: initial of H (k by m dense matrix)
+%		opts.verbose: 1: compute objective value per iteration.
+%			   0: do not compute objective value per iteration. (default)
+%		NMF_GCD will output nonnegative matrices W, H, such that WH is an approximation of V
+%		W: n by k dense matrix
+%		H: k by m dense matrix
+%		HIS.errors: objective values verus iterations. 
+%		HIS.time: time verus iterations. 
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.verbose = myverbose; 
+opts.maxIter = maxiter;
+opts.maxNumberThreads = 1;
+
+tic;
+[ W, H, HIS ] = AloExactNMF(MySTFTabs, opts);
+% BUG: fails when verbose > 0!
+apd_aloexact_time=toc;
+apd_aloexact = W*H;
+
+fprintf('      APD-AloExact Done in time: %f \n',apd_aloexact_time);
+
+%% EVALUATE APD's AloExactNMF
+%inverse transform and cut to size
+apd_aloexact_newsig = istft_catbox(apd_aloexact.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_aloexact_newsig = apd_aloexact_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_aloexact_W_neg = min(min(W))<0;
+apd_aloexact_H_neg = min(min(H))<0;
+fprintf('      APD-AloExact spectra w/ neg values?: %d \n',apd_aloexact_W_neg);
+fprintf('      APD-AloExact coeffs w/ neg values?: %d \n',apd_aloexact_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_aloexact_newsig)/norm(origMix);
+fprintf('      APD-AloExact Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_aloexact_SDR apd_aloexact_SIR apd_aloexact_SAR] = bss_eval_sources(apd_aloexact_newsig',origMix');
+fprintf('      APD-AloExact SDR: %f \t SIR: %f \t SAR: %f \n',apd_aloexact_SDR, apd_aloexact_SIR, apd_aloexact_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST APD's FCDM NMF 
+% Hsieh and Dillon. Possibly adapted by Khuong.
+% Nonnegative Matrix Factorization (NMF) via Anti-lopsided + Greedy Coordinate Descent
+% function [W, H, HIS] = NMF_GCD(V, opts)
+%		V: the input n by m dense matrix
+%		k: the specified rank
+%		maxiter: maximum number of iterations
+%		Winit: initial of W (n by k dense matrix)
+%		Hinit: initial of H (k by m dense matrix)
+%		trace: 1: compute objective value per iteration.
+%			   0: do not compute objective value per iteration. (default)
+%		NMF_GCD will output nonnegative matrices W, H, such that WH is an approximation of V
+%		W: n by k dense matrix
+%		H: k by m dense matrix
+%		objGCD: objective values. 
+%		timeGCD: time taken by GCD. 
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.verbose = myverbose; 
+opts.maxIter = maxiter;
+opts.tolerance = eps;
+
+tic;
+[ W, H, HIS ] = NMF_GCD(MySTFTabs, opts);
+apd_fcdm_time=toc;
+apd_fcdm = W*H;
+
+fprintf('      APD-FCDM Done in time: %f \n',apd_fcdm_time);
+
+%% EVALUATE APD's FCDM NMF
+%inverse transform and cut to size
+apd_fcdm_newsig = istft_catbox(apd_fcdm.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_fcdm_newsig = apd_fcdm_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_fcdm_W_neg = min(min(W))<0;
+apd_fcdm_H_neg = min(min(H))<0;
+fprintf('      APD-FCDM spectra w/ neg values?: %d \n',apd_fcdm_W_neg);
+fprintf('      APD-FCDM coeffs w/ neg values?: %d \n',apd_fcdm_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_fcdm_newsig)/norm(origMix);
+fprintf('      APD-FCDM Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_fcdm_SDR apd_fcdm_SIR apd_fcdm_SAR] = bss_eval_sources(apd_fcdm_newsig',origMix');
+fprintf('      APD-FCDM SDR: %f \t SIR: %f \t SAR: %f \n',apd_fcdm_SDR, apd_fcdm_SIR, apd_fcdm_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST APD's MU (Ross) 
+% Note: code was likely adapted by Khuong!
+% function [W, H, HIS] = LeeNMF(V, opts)
+%   V   - the matrix to factorize
+%   r   - number of basis vectors to generate
+%   iterations - number of EM iterations to perform
+%   W   - a set of r basis vectors
+%   H   - represenations of the columns of V in the basis given by W
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.verbose = myverbose; 
+opts.maxIter = maxiter;
+
+tic;
+[ W, H, HIS ] = LeeNMF(MySTFTabs, opts);
+apd_muross_time=toc;
+apd_muross = W*H;
+
+fprintf('      APD-MURoss Done in time: %f \n',apd_muross_time);
+
+%% EVALUATE APD's MU (Ross)
+%inverse transform and cut to size
+apd_muross_newsig = istft_catbox(apd_muross.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_muross_newsig = apd_muross_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_muross_W_neg = min(min(W))<0;
+apd_muross_H_neg = min(min(H))<0;
+fprintf('      APD-MURoss spectra w/ neg values?: %d \n',apd_muross_W_neg);
+fprintf('      APD-MURoss coeffs w/ neg values?: %d \n',apd_muross_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_muross_newsig)/norm(origMix);
+fprintf('      APD-MURoss Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_muross_SDR apd_muross_SIR apd_muross_SAR] = bss_eval_sources(apd_muross_newsig',origMix');
+fprintf('      APD-MURoss SDR: %f \t SIR: %f \t SAR: %f \n',apd_muross_SDR, apd_muross_SIR, apd_muross_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST APD's MU (Brunet) 
+% Note: this code seems unadapted
+% function [w,h]=nmf(v,r,verbose)
+
+tic;
+[ W, H ] = MUNMF(MySTFTabs, nrcomponents, myverbose);
+apd_mubrunet_time=toc;
+apd_mubrunet = W*H;
+
+fprintf('      APD-MUBrunet Done in time: %f \n',apd_mubrunet_time);
+
+%% EVALUATE APD's MU (Brunet)
+%inverse transform and cut to size
+apd_mubrunet_newsig = istft_catbox(apd_mubrunet.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_mubrunet_newsig = apd_mubrunet_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_mubrunet_W_neg = min(min(W))<0;
+apd_mubrunet_H_neg = min(min(H))<0;
+fprintf('      APD-MUBrunet spectra w/ neg values?: %d \n',apd_mubrunet_W_neg);
+fprintf('      APD-MUBrunet coeffs w/ neg values?: %d \n',apd_mubrunet_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_mubrunet_newsig)/norm(origMix);
+fprintf('      APD-MUBrunet Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_mubrunet_SDR apd_mubrunet_SIR apd_mubrunet_SAR] = bss_eval_sources(apd_mubrunet_newsig',origMix');
+fprintf('      APD-MUBrunet SDR: %f \t SIR: %f \t SAR: %f \n',apd_mubrunet_SDR, apd_mubrunet_SIR, apd_mubrunet_SAR);
+
+disp('--- Finished ---')
+
+%% NeNMF: also included in lrslibrary with different function header
+% skip and use lrslibrary's version as default
+
+%% TEST APD's NtNMF
+%function [B, C, HIS] = NtNMF(A, opts, varargin)
+% https://www.cs.utexas.edu/~dmkim/Source/software/nnma/nnma.html
+% A is the target matrix 
+% k is rank of B and C.
+% maxit is the maximum number of iterations
+% B0 is an initial matrix.
+% option = {0|1|2}, 0 for Newton, 1 for Quasi-Newton, 
+% 2 for CG. Default is 1.
+
+% Note: tolerance seems to be built in at 1e-2!
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.verbose = myverbose; 
+opts.maxIter = maxiter/5;       % note: this is a slow but fast converging impl.
+
+tic;
+[ W, H, HIS ] = NtNMF(MySTFTabs, opts);
+apd_ntnmf_time=toc;
+apd_ntnmf = W*H;
+
+fprintf('      APD-NtNMF Done in time: %f \n',apd_ntnmf_time);
+
+%% EVALUATE APD's NtNMF
+%inverse transform and cut to size
+apd_ntnmf_newsig = istft_catbox(apd_ntnmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_ntnmf_newsig = apd_ntnmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_ntnmf_W_neg = min(min(W))<0;
+apd_ntnmf_H_neg = min(min(H))<0;
+fprintf('      APD-NtNMF spectra w/ neg values?: %d \n',apd_ntnmf_W_neg);
+fprintf('      APD-NtNMF coeffs w/ neg values?: %d \n',apd_ntnmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_ntnmf_newsig)/norm(origMix);
+fprintf('      APD-NtNMF Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_ntnmf_SDR apd_ntnmf_SIR apd_ntnmf_SAR] = bss_eval_sources(apd_ntnmf_newsig',origMix');
+fprintf('      APD-NtNMF SDR: %f \t SIR: %f \t SAR: %f \n',apd_ntnmf_SDR, apd_ntnmf_SIR, apd_ntnmf_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST APD's PGNMF
+% NMF by alternative non-negative least squares using projected gradients
+% Source: Lin, Projected Gradient Methods for Nonnegative Matrix Factorization,
+% Neural Computation, 19, p. 2756-2779, 2007, MIT press.
+
+% function [W, H, HIS] = PGLIN(V, opts)
+% Winit = opts.W0;
+% Hinit = opts.H0;
+% tol = opts.tolerance;
+% timelimit = opts.timeLimit;
+% maxiter = opts.maxIter;
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.tolerance = eps;
+opts.timeLimit = 10000000;      % set so high that it barely counts
+opts.verbose = myverbose; 
+opts.maxIter = maxiter;       % note: this is a slow impl.
+
+tic;
+[ W, H, HIS ] = PGLIN(MySTFTabs, opts);
+apd_pglin_time=toc;
+apd_pglin = W*H;
+
+fprintf('      APD-PGLIN Done in time: %f \n',apd_pglin_time);
+
+
+%% EVALUATE APD's PGNMF
+%inverse transform and cut to size
+apd_pglin_newsig = istft_catbox(apd_pglin.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_pglin_newsig = apd_pglin_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_pglin_W_neg = min(min(W))<0;
+apd_pglin_H_neg = min(min(H))<0;
+fprintf('      APD-pglin spectra w/ neg values?: %d \n',apd_pglin_W_neg);
+fprintf('      APD-pglin coeffs w/ neg values?: %d \n',apd_pglin_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_pglin_newsig)/norm(origMix);
+fprintf('      APD-pglin Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_pglin_SDR apd_pglin_SIR apd_pglin_SAR] = bss_eval_sources(apd_pglin_newsig',origMix');
+fprintf('      APD-pglin SDR: %f \t SIR: %f \t SAR: %f \n',apd_pglin_SDR, apd_pglin_SIR, apd_pglin_SAR);
+
+disp('--- Finished ---')
+
+
+%% TEST APD's QnNMF
+%function [B, C, HIS] = QnNMF(A, opts, varargin)
+% https://www.cs.utexas.edu/~dmkim/Source/software/nnma/nnma.html
+% A is the target matrix 
+% k is rank of B and C.
+% maxit is the maximum number of iterations
+% B0 is an initial matrix.
+% option = {0|1|2}, 0 for Newton, 1 for Quasi-Newton, 
+% 2 for CG. Default is 1.
+
+% Note: tolerance seems to be built in at 1e-2!
+
+[m,n] = size(MySTFTabs);
+opts.W0 = rand(m,nrcomponents); opts.H0 = rand(nrcomponents,n);
+opts.verbose = myverbose; 
+opts.maxIter = maxiter/5;       % note: this is a slow impl.      
+
+tic;
+[ W, H, HIS ] = QnNMF(MySTFTabs, opts);
+apd_qnnmf_time=toc;
+apd_qnnmf = W*H;
+
+fprintf('      APD-QnNMF Done in time: %f \n',apd_qnnmf_time);
+
+%% EVALUATE APD's QnNMF
+%inverse transform and cut to size
+apd_qnnmf_newsig = istft_catbox(apd_qnnmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
+apd_qnnmf_newsig = apd_qnnmf_newsig(fftsize+1:fftsize+length(origMix));
+
+%has negative values?
+apd_qnnmf_W_neg = min(min(W))<0;
+apd_qnnmf_H_neg = min(min(H))<0;
+fprintf('      APD-qnnmf spectra w/ neg values?: %d \n',apd_qnnmf_W_neg);
+fprintf('      APD-qnnmf coeffs w/ neg values?: %d \n',apd_qnnmf_H_neg);
+
+%compute reconstruction error
+rec_err = norm(origMix-apd_qnnmf_newsig)/norm(origMix);
+fprintf('      APD-qnnmf Normalized Reconstruction Error: %e \n',rec_err);
+
+% compute BSS EVAL. make sure we define rows as signals, not columns
+[apd_qnnmf_SDR apd_qnnmf_SIR apd_qnnmf_SAR] = bss_eval_sources(apd_qnnmf_newsig',origMix');
+fprintf('      APD-qnnmf SDR: %f \t SIR: %f \t SAR: %f \n',apd_qnnmf_SDR, apd_qnnmf_SIR, apd_qnnmf_SAR);
+
+disp('--- Finished ---')
+
