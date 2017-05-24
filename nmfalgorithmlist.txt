@@ -64,10 +64,12 @@ List of NMF algorithms in this repository:
 - ActiveSet (Jingu Kim and Haesun Park)
 	File: NMF_APD/Methods/ActiveSet/ActiveSet.m
 - AloExactNMF (greedy coordinate descent)
-	Impl: most likely also Hsieh and Dillon
+	Impl: Hsieh and Dillon? Adapted by Khuong?
 	File: NMF_APD/Methods/AloExactNMF/AloExactNMF.m
-- AloNMF (Hsieh and Dillon)
-	File: NMF_APD/Methods/AloNMF/AloExactNMF.m
+	Note: CAREFUL with this code, does not correspond to Hsieh/Dillon matlab/mex!
+- AloNMF (Hsieh and Dillon? Adapted by Khuong?)
+	File: NMF_APD/Methods/AloNMF/AloProject.m ? (Note: AlNMF is exactly AloExactNMF from above)
+	Note: similar or same to AloExactNMF. Skip.
 - FCDMNMF (Cho-Jui Hsieh and Inderjit S. Dhillon)
 	File: NMF_APD/Methods/FCDMNMF/NMF_GCD
 - MU (2 implementations: Brunet (copy of lrslib/LNMF version) and Ross)
