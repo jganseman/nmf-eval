@@ -1,3 +1,6 @@
+% Note: if necessary, replace the paths in this file with the paths
+% that work on your local machine!
+
 function str = getDataDirectory()
 %GETDATADIRECTORY Returns the place of the data directory
 %   Use this function to define a path to the example data files
@@ -14,8 +17,4 @@ end
 % if at C4DM on linux, use str = '/c4dm-scratch/jga/data/';
 % if at home, use str = '/Users/jg/Dropbox/data/'; 
 % if at home on pc, use, str = 'C:\Users\JG\Dropbox\data\';
-    
-%end
-
 end
-
