@@ -64,8 +64,8 @@ ylabel('frequency bin')
 
 %save this plot if you want
 if PRINTTOFILE
-filename='../../../thesis/images/chapter4/bwv1068spect.tex';
-matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+    filename='../../../thesis/images/chapter4/bwv1068spect.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
 end
 
 %% Perform DTW between these audiofiles
@@ -96,8 +96,8 @@ hold on; plot(q,p,'r'); hold off
 
 %save this plot if you want
 if PRINTTOFILE
-filename='../../../thesis/images/chapter4/dtwexample.tex';
-matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+    filename = '../../../thesis/images/chapter4/dtwexample.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
 end
 
 
@@ -195,9 +195,9 @@ nmfrec(cell2mat(nmfindex)) = nmfrec;
 
 %% compute BSS_EVAL 2.1 sources metrics
 [s_target1, e_interf1, e_artif1] = bss_decomp_gain(nmfrec{1}, 1, cell2mat(arpegsrc'));
-[sdr21g(1) sir21g(1) sar21g(1)] =  bss_crit(s_target1, e_interf1, e_artif1);
+[sdr21g(1), sir21g(1), sar21g(1)] =  bss_crit(s_target1, e_interf1, e_artif1);
 [s_target2, e_interf2, e_artif2] = bss_decomp_gain(nmfrec{2}, 2, cell2mat(arpegsrc'));
-[sdr21g(2) sir21g(2) sar21g(2)] =  bss_crit(s_target2, e_interf2, e_artif2);
+[sdr21g(2), sir21g(2), sar21g(2)] =  bss_crit(s_target2, e_interf2, e_artif2);
 % note: decomp_gain equals decomp_filt!
 
 % For bss_decomp_tvgain and bss_decomp_tvfilt, a filter shape and size
@@ -208,7 +208,7 @@ fprintf('SIR21g of sources 1, 2: %f , %f\n', sir21g(1), sir21g(2));
 fprintf('SAR21g of sources 1, 2: %f , %f\n\n', sar21g(1), sar21g(2));
 
 %% compute BSS_EVAL 3.0 sources metrics
-[sdr30s sir30s sar30s perm30s] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+[sdr30s, sir30s, sar30s, perm30s] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('SDR30s of sources 1, 2: %f , %f\n', sdr30s(1), sdr30s(2));
 fprintf('SIR30s of sources 1, 2: %f , %f\n', sir30s(1), sir30s(2));
 fprintf('SAR30s of sources 1, 2: %f , %f\n\n', sar30s(1), sar30s(2));
@@ -228,3 +228,6 @@ fprintf('$\\hat{s_1}$ SAR: & $%f$ & $%f$ & $%f$ & $\\hat{s_2}$ SAR: & $%f$ & $%f
 fprintf('$\\hat{s_1}$ SDR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SDR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr21g(1), sdr30s(1), sdr30i(1), sdr21g(2), sdr30s(2), sdr30i(2));
 fprintf('$\\hat{s_1}$ SIR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SIR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sir21g(1), sir30s(1), sir30i(1), sir21g(2), sir30s(2), sir30i(2));
 fprintf('$\\hat{s_1}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sar21g(1), sar30s(1), sar30i(1), sar21g(2), sar30s(2), sar30i(2));
+
+%% check the effect of some distortion on these metrics
+
