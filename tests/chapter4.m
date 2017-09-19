@@ -141,8 +141,8 @@ silence=zeros(1,minlength);
 arpegsrc{1} = [ source{1} silence source{1}./nrsources ];
 arpegsrc{2} = [ silence source{2} source{2}./nrsources ];
 
-
-fprintf('\nLength of mixture: %2.3f seconds.\n', minlength*3/44100);
+totlength = minlength*3;
+fprintf('\nLength of mixture: %2.3f seconds.\n', totlength/44100);
 % to play, use:
 % soundsc(arpegmix, 44100)
 
@@ -230,4 +230,114 @@ fprintf('$\\hat{s_1}$ SIR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SIR: & $
 fprintf('$\\hat{s_1}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sar21g(1), sar30s(1), sar30i(1), sar21g(2), sar30s(2), sar30i(2));
 
 %% check the effect of some distortion on these metrics
+fprintf('Separation metrics without distortion\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30s(1), sir30s(1), sar30s(1));
+%save orig separation for later
+origsep = nmfrec;
+
+%% distortion one: set 1 sample to 0 in each frame
+nmfrec = origsep;
+mask = ones(size(nmfrec{1}));
+positions = [1:hp:totlength];
+mask(positions) = 0;
+nmfrec{1} = nmfrec{1} .* mask;
+% soundsc(nmfrec{1}, 44100)
+[sdr30d1, sir30d1, sar30d1, perm30d1] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with 1/hopsize sample removal\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d1(1), sir30d1(1), sar30d1(1));
+
+%% now double the distortion
+nmfrec = origsep;
+mask = ones(size(nmfrec{1}));
+positions = [1:hp/2:totlength];
+mask(positions) = 0;
+nmfrec{1} = nmfrec{1} .* mask;
+[sdr30d12, sir30d12, sar30d12, perm30d12] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with 2/hopsize sample removal\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d12(1), sir30d12(1), sar30d12(1));
+
+%% now put the 0 samples next to eachother
+nmfrec = origsep;
+mask = ones(size(nmfrec{1}));
+positions = [1:hp:totlength];
+mask(positions) = 0; mask(positions+1) = 0;
+nmfrec{1} = nmfrec{1} .* mask;
+[sdr30d13, sir30d13, sar30d13, perm30d13] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with 2/hopsize consecutive sample removal\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d13(1), sir30d13(1), sar30d13(1));
+
+%% distortion two: blend with white noise
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)); % = RMS
+%no rescaling needed, bss_eval is independent of gain
+[sdr30d2, sir30d2, sar30d2, perm30d2] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with 1xRMS white noise added\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d2(1), sir30d2(1), sar30d2(1));
+
+%% white noise at twice the RMS
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)).*2; % = RMS
+%no rescaling needed, bss_eval is independent of gain
+[sdr30d22, sir30d22, sar30d22, perm30d22] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with 2xRMS white noise added\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d22(1), sir30d22(1), sar30d22(1));
+
+%% distortion three: add sinusoid at medium freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*440*[1:1:totlength]./44100);
+[sdr30d3, sir30d3, sar30d3, perm30d3] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with medium sinusoid tone added\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d3(1), sir30d3(1), sar30d3(1));
+
+%% distortion four: add sinusoid at very-low freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*20*[1:1:totlength]./44100);
+[sdr30d4, sir30d4, sar30d4, perm30d4] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with very low sinusoid tone added\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d4(1), sir30d4(1), sar30d4(1));
+
+%% distortion five: add sinusoid at ultra-low freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*1*[1:1:totlength]./44100);
+[sdr30d5, sir30d5, sar30d5, perm30d5] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with ultra low sinusoid tone added\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d5(1), sir30d5(1), sar30d5(1));
+
+%% distortion six: modulate with sinusoid at medium freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*440*[1:1:totlength]./44100);
+[sdr30d6, sir30d6, sar30d6, perm30d6] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics modulated with medium sinusoid tone\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d6(1), sir30d6(1), sar30d6(1));
+
+%% distortion seven: modulate sinusoid at very-low freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*20*[1:1:totlength]./44100);
+[sdr30d7, sir30d7, sar30d7, perm30d7] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics modulated with very low sinusoid tone\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d7(1), sir30d7(1), sar30d7(1));
+
+%% distortion eight: modulate sinusoid at ultra-low freq
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*1*[1:1:totlength]./44100);
+[sdr30d8, sir30d8, sar30d8, perm30d8] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics modulated with ultra low sinusoid tone\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d8(1), sir30d8(1), sar30d8(1));
+
+% soundsc(nmfrec{1}, 44100)
+
+%% print for LaTeX table
+fprintf('Original separation result & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1));
+fprintf('Put 1 in 256 samples to 0 (crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d1(1), sir30d1(1), sar30d1(1));
+fprintf('Put 1 in 128 samples to 0 (more crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d12(1), sir30d12(1), sar30d12(1));
+fprintf('Add white noise scaled to 1 time the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d2(1), sir30d2(1), sar30d2(1));
+fprintf('Add white noise scaled to twice the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d22(1), sir30d22(1), sar30d22(1));
+fprintf('Add 440Hz sinusoid to signal (loud beep tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d3(1), sir30d3(1), sar30d3(1));
+fprintf('Add 20Hz sinusoid to signal (barely audible rumble) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d4(1), sir30d4(1), sar30d4(1));
+fprintf('Add 1Hz sinusoid to signal (not audible!) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d5(1), sir30d5(1), sar30d5(1));
+fprintf('Modulation with 440Hz sinusoid (bell-like resonance) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d6(1), sir30d6(1), sar30d6(1));
+fprintf('Modulation with 20Hz sinusoid (``flutter'''' effect) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d7(1), sir30d7(1), sar30d7(1));
+fprintf('Modulation with 1Hz sinusoid (loudness ``wobble\'''') & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d8(1), sir30d8(1), sar30d8(1));
+
+
 
