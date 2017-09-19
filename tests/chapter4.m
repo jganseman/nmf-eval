@@ -220,6 +220,20 @@ fprintf('SIR30i of sources 1, 2: %f , %f\n', sir30i(1), sir30i(2));
 fprintf('SAR30i of sources 1, 2: %f , %f\n', sar30i(1), sar30i(2));
 fprintf('ISR30i of sources 1, 2: %f , %f\n\n', isr30i(1), isr30i(2));
 
+%% compute PEASS 2.0 objective metrics
+% done by repurposing the PEASS handler file from 2012 Fritsch-Ganseman ICML paper
+options.segmentationFactor = 1;
+% Segmentation factor of x splits the file in x pieces. 1 is default
+options.resultdir = './'; % where to write the temp results. must end in /
+options.sr = 44100;
+[ sdrP2, sirP2, sarP2, isrP2, qGlobal, qTarget, qInterf, qArtif, OPS, TPS, IPS, APS ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
+
+% in PEASS toolkit itself (1). Test the difference!
+fprintf('sdrP2 of sources 1, 2: %f , %f\n', sdrP2(1), sdrP2(2));
+fprintf('sirP2 of sources 1, 2: %f , %f\n', sirP2(1), sirP2(2));
+fprintf('sarP2 of sources 1, 2: %f , %f\n', sarP2(1), sarP2(2));
+fprintf('isrP2 of sources 1, 2: %f , %f\n\n', isrP2(1), isrP2(2));
+
 %% table output for latex
 fprintf('$\\hat{s_1}$ SDR: & $%f$ & $%f$ & $%f$ & $\\hat{s_2}$ SDR: & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sdr21g(1), sdr30s(1), sdr30i(1), sdr21g(2), sdr30s(2), sdr30i(2));
 fprintf('$\\hat{s_1}$ SIR: & $%f$ & $%f$ & $%f$ & $\\hat{s_2}$ SIR: & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sir21g(1), sir30s(1), sir30i(1), sir21g(2), sir30s(2), sir30i(2));
@@ -228,6 +242,19 @@ fprintf('$\\hat{s_1}$ SAR: & $%f$ & $%f$ & $%f$ & $\\hat{s_2}$ SAR: & $%f$ & $%f
 fprintf('$\\hat{s_1}$ SDR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SDR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr21g(1), sdr30s(1), sdr30i(1), sdr21g(2), sdr30s(2), sdr30i(2));
 fprintf('$\\hat{s_1}$ SIR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SIR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sir21g(1), sir30s(1), sir30i(1), sir21g(2), sir30s(2), sir30i(2));
 fprintf('$\\hat{s_1}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ & $\\hat{s_2}$ SAR: & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sar21g(1), sar30s(1), sar30i(1), sar21g(2), sar30s(2), sar30i(2));
+
+fprintf('\n');
+%% more table output for latex
+fprintf('BSS\\_EVAL 2.1 : & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sdr21g(1), sir21g(1), sar21g(1), sdr21g(2), sir21g(2), sar21g(2));
+fprintf('BSS\\_EVAL 3.0\\_s : & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1), sdr30s(2), sir30s(2), sar30s(2));
+fprintf('BSS\\_EVAL 3.0\\_i : & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sdr30i(1), sir30i(1), sar30i(1), sdr30i(2), sir30i(2), sar30i(2));
+fprintf('PEASS 2.0 : & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ & $%f$ \\\\\n\\hline\n', sdrP2(1), sirP2(1), sarP2(1), sdrP2(2), sirP2(2), sarP2(2));
+
+fprintf('BSS\\_EVAL 2.1 : & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr21g(1), sir21g(1), sar21g(1), sdr21g(2), sir21g(2), sar21g(2));
+fprintf('BSS\\_EVAL 3.0\\_s : & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1), sdr30s(2), sir30s(2), sar30s(2));
+fprintf('BSS\\_EVAL 3.0\\_i : & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30i(1), sir30i(1), sar30i(1), sdr30i(2), sir30i(2), sar30i(2));
+fprintf('PEASS 2.0 : & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2(1), sirP2(1), sarP2(1), sdrP2(2), sirP2(2), sarP2(2));
+
 
 %% check the effect of some distortion on these metrics
 fprintf('Separation metrics without distortion\n');

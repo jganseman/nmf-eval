@@ -1,4 +1,4 @@
-function [output sampleRate] = wavread(file, varargin)
+function [output, sampleRate] = wavread(file, varargin)
 % Function wavread provided for forward compatibility with Matlab versions
 % after 2015 
 % (wavread was removed in 2015b)
@@ -6,4 +6,12 @@ function [output sampleRate] = wavread(file, varargin)
 
 % author: Joachim Ganseman
 
-[output sampleRate] = audioread(file, varargin{:});
+% special case: if varargin is 'size', return [samples channels] of audiodata
+if ((length(varargin) == 1) && strcmp(varargin{1},'size'))
+    info = audioinfo(file);
+    output = [ info.TotalSamples/info.NumChannels, info.NumChannels] ; 
+    %TODO necessary to divide by NumChannels?
+else
+    [output, sampleRate] = audioread(file, varargin{:});
+end
+
