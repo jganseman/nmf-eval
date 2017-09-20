@@ -53,6 +53,7 @@
 
 
 #include "adapt.h"
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "mex.h"
 
@@ -78,7 +79,7 @@
 
 #define TRUE 1
 #define FALSE 0
-#define OUT_LOWPASS_CUTOFF 7.957747  // (-> tau = 0.02) 
+#define OUT_LOWPASS_CUTOFF 7.957747  
 #define DBRANGE 100
 
 #define QLIMIT true
@@ -340,7 +341,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         fsample = mxGetScalar(FSAMPLE);
         if (nrhs >= 3) {
             LowpassCutoff = mxGetScalar(LP_CUTOFF);
-            if (!LowpassCutoff) q_out_lp = false;    // skip LP-filtering if LowpassCutoff == 0
+            if (!LowpassCutoff) q_out_lp = false;    
         }
         if (nrhs == 8) {
             tau[0] = mxGetScalar(T1)/1000;
