@@ -1,6 +1,8 @@
 % Chapter 4: creating the images for Chapter 4 of my PhD Thesis.
 % (c) Joachim Ganseman, september 2017
 
+% NOTE: run this file while inside the 'tests' folder in Matlab for correct path
+
 % NOTE: AFTER RUNNING, EXTERNALIZE THE DATA TABLE READING in 2 steps:
 % 1. add the following code before subimporting the created tex file:
 %     \pgfplotstableread{./images/chapter2/audiosignalexcerpt-1.tsv}\loadedtable
@@ -267,104 +269,176 @@ nmfrec = origsep;
 mask = ones(size(nmfrec{1}));
 positions = [1:hp:totlength];
 mask(positions) = 0;
-nmfrec{1} = nmfrec{1} .* mask;
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* mask;
 % soundsc(nmfrec{1}, 44100)
 [sdr30d1, sir30d1, sar30d1, perm30d1] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with 1/hopsize sample removal\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d1(1), sir30d1(1), sar30d1(1));
+% compute PEASS in one go
+[ sdrP2d1, sirP2d1, sarP2d1, isrP2d1, ~, ~, ~, ~, OPSd1, TPSd1, IPSd1, APSd1 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
+
 
 %% now double the distortion
 nmfrec = origsep;
 mask = ones(size(nmfrec{1}));
 positions = [1:hp/2:totlength];
 mask(positions) = 0;
-nmfrec{1} = nmfrec{1} .* mask;
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* mask;
 [sdr30d12, sir30d12, sar30d12, perm30d12] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with 2/hopsize sample removal\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d12(1), sir30d12(1), sar30d12(1));
+% compute PEASS in one go
+[ sdrP2d12, sirP2d12, sarP2d12, isrP2d12, ~, ~, ~, ~, OPSd12, TPSd12, IPSd12, APSd12 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% now put the 0 samples next to eachother
 nmfrec = origsep;
 mask = ones(size(nmfrec{1}));
 positions = [1:hp:totlength];
 mask(positions) = 0; mask(positions+1) = 0;
-nmfrec{1} = nmfrec{1} .* mask;
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* mask;
 [sdr30d13, sir30d13, sar30d13, perm30d13] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with 2/hopsize consecutive sample removal\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d13(1), sir30d13(1), sar30d13(1));
+% compute PEASS in one go
+[ sdrP2d13, sirP2d13, sarP2d13, isrP2d13, ~, ~, ~, ~, OPSd13, TPSd13, IPSd13, APSd13 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion two: blend with white noise
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)); % = RMS
-%no rescaling needed, bss_eval is independent of gain
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
+nmfrec{1} = nmfrec{1} + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)); % = RMS
+%rescale for PEASS
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
 [sdr30d2, sir30d2, sar30d2, perm30d2] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with 1xRMS white noise added\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d2(1), sir30d2(1), sar30d2(1));
+% compute PEASS in one go
+[ sdrP2d2, sirP2d2, sarP2d2, isrP2d2, ~, ~, ~, ~, OPSd2, TPSd2, IPSd2, APSd2 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% white noise at twice the RMS
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)).*2; % = RMS
-%no rescaling needed, bss_eval is independent of gain
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
+nmfrec{1} = nmfrec{1} + rand(size(nmfrec{1})).*sqrt(mean(nmfrec{1}.^2)).*2; % = RMS
+%rescale for PEASS
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
 [sdr30d22, sir30d22, sar30d22, perm30d22] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with 2xRMS white noise added\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d22(1), sir30d22(1), sar30d22(1));
+% compute PEASS in one go
+[ sdrP2d22, sirP2d22, sarP2d22, isrP2d22, ~, ~, ~, ~, OPSd22, TPSd22, IPSd22, APSd22 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion three: add sinusoid at medium freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*440*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) + sin(2*pi*440*[1:1:totlength]./44100);
+%rescale for PEASS
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
 [sdr30d3, sir30d3, sar30d3, perm30d3] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with medium sinusoid tone added\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d3(1), sir30d3(1), sar30d3(1));
+% compute PEASS in one go
+[ sdrP2d3, sirP2d3, sarP2d3, isrP2d3, ~, ~, ~, ~, OPSd3, TPSd3, IPSd3, APSd3 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion four: add sinusoid at very-low freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*20*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) + sin(2*pi*20*[1:1:totlength]./44100);
+%rescale for PEASS
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
 [sdr30d4, sir30d4, sar30d4, perm30d4] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with very low sinusoid tone added\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d4(1), sir30d4(1), sar30d4(1));
+% compute PEASS in one go
+[ sdrP2d4, sirP2d4, sarP2d4, isrP2d4, ~, ~, ~, ~, OPSd4, TPSd4, IPSd4, APSd4 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion five: add sinusoid at ultra-low freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) + sin(2*pi*1*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) + sin(2*pi*1*[1:1:totlength]./44100);
+%rescale for PEASS
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1}));
 [sdr30d5, sir30d5, sar30d5, perm30d5] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics with ultra low sinusoid tone added\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d5(1), sir30d5(1), sar30d5(1));
+% compute PEASS in one go
+[ sdrP2d5, sirP2d5, sarP2d5, isrP2d5, ~, ~, ~, ~, OPSd5, TPSd5, IPSd5, APSd5 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion six: modulate with sinusoid at medium freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*440*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* sin(2*pi*440*[1:1:totlength]./44100);
 [sdr30d6, sir30d6, sar30d6, perm30d6] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics modulated with medium sinusoid tone\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d6(1), sir30d6(1), sar30d6(1));
+% compute PEASS in one go
+[ sdrP2d6, sirP2d6, sarP2d6, isrP2d6, ~, ~, ~, ~, OPSd6, TPSd6, IPSd6, APSd6 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion seven: modulate sinusoid at very-low freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*20*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* sin(2*pi*20*[1:1:totlength]./44100);
 [sdr30d7, sir30d7, sar30d7, perm30d7] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics modulated with very low sinusoid tone\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d7(1), sir30d7(1), sar30d7(1));
+% compute PEASS in one go
+[ sdrP2d7, sirP2d7, sarP2d7, isrP2d7, ~, ~, ~, ~, OPSd7, TPSd7, IPSd7, APSd7 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
 
 %% distortion eight: modulate sinusoid at ultra-low freq
 nmfrec = origsep;
-nmfrec{1} = nmfrec{1}./max(nmfrec{1}) .* sin(2*pi*1*[1:1:totlength]./44100);
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})) .* sin(2*pi*1*[1:1:totlength]./44100);
 [sdr30d8, sir30d8, sar30d8, perm30d8] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 fprintf('Separation metrics modulated with ultra low sinusoid tone\n');
 fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d8(1), sir30d8(1), sar30d8(1));
+% compute PEASS in one go
+[ sdrP2d8, sirP2d8, sarP2d8, isrP2d8, ~, ~, ~, ~, OPSd8, TPSd8, IPSd8, APSd8 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
+
+%% distortion nine: add a DC offset
+nmfrec = origsep;
+% avoid clipping: scale to 0.9 then add 0.1
+nmfrec{1} = nmfrec{1}./max(abs(nmfrec{1})).*0.9 + 0.1;
+[sdr30d9, sir30d9, sar30d9, perm30d9] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics with +0.1 DC offset\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30d9(1), sir30d9(1), sar30d9(1));
+% compute PEASS in one go
+[ sdrP2d9, sirP2d9, sarP2d9, isrP2d9, ~, ~, ~, ~, OPSd9, TPSd9, IPSd9, APSd9 ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
+
+%% distortion ten: different gain
+nmfrec = origsep;
+nmfrec{1} = nmfrec{1}./10;
+nmfrec{2} = nmfrec{2}./10;
+[sdr30s, sir30s, sar30s, perm30s] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+fprintf('Separation metrics at 1/10 scale.\n');
+fprintf('BSS30s of source 1: SDR %f , SIR %f, SAR %f\n', sdr30s(1), sir30s(1), sar30s(1));
+% compute PEASS in one go
+[ sdrP2s, sirP2s, sarP2s, isrP2s, ~, ~, ~, ~, OPSs, TPSs, IPSs, APSs ] = EvalInfSepPEASS(nmfrec, arpegsrc, options);
+
 
 % soundsc(nmfrec{1}, 44100)
 
-%% print for LaTeX table
-fprintf('Original separation result & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1));
-fprintf('Put 1 in 256 samples to 0 (crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d1(1), sir30d1(1), sar30d1(1));
-fprintf('Put 1 in 128 samples to 0 (more crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d12(1), sir30d12(1), sar30d12(1));
-fprintf('Add white noise scaled to 1 time the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d2(1), sir30d2(1), sar30d2(1));
-fprintf('Add white noise scaled to twice the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d22(1), sir30d22(1), sar30d22(1));
-fprintf('Add 440Hz sinusoid to signal (loud beep tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d3(1), sir30d3(1), sar30d3(1));
-fprintf('Add 20Hz sinusoid to signal (barely audible rumble) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d4(1), sir30d4(1), sar30d4(1));
-fprintf('Add 1Hz sinusoid to signal (not audible!) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d5(1), sir30d5(1), sar30d5(1));
-fprintf('Modulation with 440Hz sinusoid (bell-like resonance) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d6(1), sir30d6(1), sar30d6(1));
-fprintf('Modulation with 20Hz sinusoid (``flutter'''' effect) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d7(1), sir30d7(1), sar30d7(1));
-fprintf('Modulation with 1Hz sinusoid (loudness ``wobble\'''') & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d8(1), sir30d8(1), sar30d8(1));
+%% print for BSS_EVAL LaTeX table
+fprintf('1. Original separation result & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1));
+fprintf('2. Put 1 in 256 samples to 0 (crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d1(1), sir30d1(1), sar30d1(1));
+fprintf('3. Put 1 in 128 samples to 0 (more crackle noise) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d12(1), sir30d12(1), sar30d12(1));
+fprintf('4. Add white noise scaled to 1 time the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d2(1), sir30d2(1), sar30d2(1));
+fprintf('5. Add white noise scaled to twice the RMS of the signal & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d22(1), sir30d22(1), sar30d22(1));
+fprintf('6. Add 440Hz sinusoid to signal (loud beep tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d3(1), sir30d3(1), sar30d3(1));
+fprintf('7. Add 20Hz sinusoid to signal (barely audible rumble) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d4(1), sir30d4(1), sar30d4(1));
+fprintf('8. Add 1Hz sinusoid to signal (not audible) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d5(1), sir30d5(1), sar30d5(1));
+fprintf('9. Modulation with 440Hz sinusoid (bell-like resonance) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d6(1), sir30d6(1), sar30d6(1));
+fprintf('10. Modulation with 20Hz sinusoid (``flutter'''' effect) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d7(1), sir30d7(1), sar30d7(1));
+fprintf('11. Modulation with 1Hz sinusoid (loudness ``wobble\'''') & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d8(1), sir30d8(1), sar30d8(1));
+fprintf('12. Add +0.1 DC offset to signal (not audible) & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30d9(1), sir30d9(1), sar30d9(1));
+fprintf('13. Scaled to 1/10 of original gain & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdr30s(1), sir30s(1), sar30s(1));
 
+
+%% print for PEASS latex table
+
+fprintf('1. (Original) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2(1), sirP2(1), sarP2(1), isrP2(1), OPS(1), TPS(1), IPS(1), APS(1));
+fprintf('2. (crackle, 1/256 sample) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d1(1), sirP2d1(1), sarP2d1(1), isrP2d1(1), OPSd1(1), TPSd1(1), IPSd1(1), APSd1(1));
+fprintf('3. (crackle, 1/128 sample) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d12(1), sirP2d12(1), sarP2d12(1), isrP2d12(1), OPSd12(1), TPSd12(1), IPSd12(1), APSd12(1));
+fprintf('4. (white noise, 1xRMS) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d2(1), sirP2d2(1), sarP2d2(1), isrP2d2(1), OPSd2(1), TPSd2(1), IPSd2(1), APSd2(1));
+fprintf('5. (white noise, 2xRMS) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d22(1), sirP2d22(1), sarP2d22(1), isrP2d22(1), OPSd22(1), TPSd22(1), IPSd22(1), APSd22(1));
+fprintf('6. (Add 440Hz tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d3(1), sirP2d3(1), sarP2d3(1), isrP2d3(1), OPSd3(1), TPSd3(1), IPSd3(1), APSd3(1));
+fprintf('7. (Add 20Hz tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d4(1), sirP2d4(1), sarP2d4(1), isrP2d4(1), OPSd4(1), TPSd4(1), IPSd4(1), APSd4(1));
+fprintf('8. (Add 1Hz tone) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d5(1), sirP2d5(1), sarP2d5(1), isrP2d5(1), OPSd5(1), TPSd5(1), IPSd5(1), APSd5(1));
+fprintf('9. (Modulate with 440Hz) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d6(1), sirP2d6(1), sarP2d6(1), isrP2d6(1), OPSd6(1), TPSd6(1), IPSd6(1), APSd6(1));
+fprintf('10. (Modulate with 20Hz) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d7(1), sirP2d7(1), sarP2d7(1), isrP2d7(1), OPSd7(1), TPSd7(1), IPSd7(1), APSd7(1));
+fprintf('11. (Modulate with 1Hz) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d8(1), sirP2d8(1), sarP2d8(1), isrP2d8(1), OPSd8(1), TPSd8(1), IPSd8(1), APSd8(1));
+fprintf('12. (Add +0.1 DC offset) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2d9(1), sirP2d9(1), sarP2d9(1), isrP2d9(1), OPSd9(1), TPSd9(1), IPSd9(1), APSd9(1));
+fprintf('13. (Scaled to 1/10th) & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ & $%2.2f$ \\\\\n\\hline\n', sdrP2s(1), sirP2s(1), sarP2s(1), isrP2s(1), OPSs(1), TPSs(1), IPSs(1), APSs(1));
 
 
