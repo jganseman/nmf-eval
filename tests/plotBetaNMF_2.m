@@ -1,13 +1,11 @@
-% Testing divergences and powers of Beta-NMF - an experiment. 
+% Testing divergences and powers of Beta-NMF - a second experiment. 
 % Author: Joachim Ganseman, University of Antwerp, all rights reserved
-% june 2017
+% october 2017
 
 % For the STFT, we choose the corrected version from CATbox, which is available
-% in github.com/jganseman/nsgt_eval . This is the fastest STFT among the 4 
-% we tested, and also the one with the smallest reconstruction error when
-% window-corrected (option 'smooth').
+% in github.com/jganseman/nsgt_eval . 
 
-% Using the Beta-NMF implementation from G. Grindlay's NMFLIB
+% Using the Beta-NMF implementation from G. Grindlay's NMFLIB.
 % Phase is ignored in the NMF; the inverse STFT uses the original phase data.
 % For separation instead of signal reconstruction, BSS_EVAL 3.0 is used.
 
@@ -15,8 +13,10 @@
 % 3-different-note mixtures that are to be separated. Limiting ourselves
 % to reasonable MIDI range and fairly equal loudness.
 
-% Much of the code in this file is based on an earlier 2014 experiment to 
-% run the SISAL algorithm on the MAPS database.
+% In this second version of the experiment, we use a shorter sample
+% signal, and use the ''perm'' output of BSS_EVAL for ordering.
+
+% NOTE: can take about 4.5 hrs to run!
 
 %%
 clear;
@@ -77,6 +77,29 @@ iter = 50; % number of EM iterations
 beta = 1;
 power = 1;
 
+% define limits of the experiment
+lowestpower = 0.5;
+powerinc = 0.1;
+highestpower = 2.5;
+lowestbeta = 0.0;
+highestbeta = 2.5;
+betainc = 0.1;
+numpowers = (highestpower - lowestpower) / powerinc +1;
+numbetas = (highestbeta - lowestbeta) / betainc +1;
+mySDR = cell([numpowers numbetas]);
+mySIR = cell([numpowers numbetas]);
+mySAR = cell([numpowers numbetas]);
+myPerm = cell([numpowers numbetas]);
+
+% pre-initializing other arrays and cell arrays for speed
+source = cell([1 nrsources]);
+arpegsrc = cell([1 nrsources]);
+wavstft = cell([1 nrsources]);
+wavstftabs = cell([1 nrsources]);
+wavstftphase = cell([1 nrsources]);
+reconstnmf = cell([1 nrsources]);
+nmfrec = cell([1 nrsources]);
+
 %% begin a set of external loops
 
 for midibase = [60 48 72] % 84 36 96 54 66 42 78 90]
@@ -90,7 +113,7 @@ for thischord= 1
 currentchord = chords{thischord} + midibase;
 nrsources = length(currentchord);
 
-minlength = 1000000000;
+minlength = 128000/2;     % 2.9 seconds is more than enough
 fprintf('Processing files: ')
 for i=1:nrsources
    filename = [ filestart num2str(smap(currentchord(i))) filemiddle num2str(currentchord(i)) fileend ]; 
@@ -101,9 +124,10 @@ for i=1:nrsources
    if smap(currentchord(i))     %equals 1 is implicit
        source{i} = source{i}(0.2*44100:end);
    end
-   if length(source{i}) < minlength
-       minlength = length(source{i});
-   end
+   % --> no more need to update minlength if cutting to a few seconds
+   %if length(source{i}) < minlength
+   %    minlength = length(source{i});
+   %end
 end
 % Note: minlength is much longer for cases where all sources use sustain=1
 % This is the case for: 60-63-68, 60-64-69, 60-64-68
@@ -112,10 +136,11 @@ end
 % cut sources such that they have the same length
 mixture=0;
 for i=1:nrsources
-    source{i} = source{i}(1:minlength);
+    source{i} = source{i}(1+minlength/4:minlength+minlength/4);
     mixture = mixture + source{i};
 end
 mixture = mixture ./ nrsources;
+%NOTE: there still is a +/- 0.5s silence in beginning of each source!
 
 % now we've got our sources in the source{} cell, and a mixture.
 % we can concatenate the sources to our mixture, to have an arpeggiated
@@ -162,11 +187,11 @@ H0 = rand(nrcomp, nrcols); %H0 = H0./sum(H0, 1);
 %% Iterate over power and beta
 powerindex=0;
 
-for power = 0.5:0.1:2.5 %1
+for power = lowestpower:powerinc:highestpower %1
 powerindex = powerindex+1;
 betaindex=0;
 
-for beta = 0.0:0.1:2.5 %1
+for beta = lowestbeta:betainc:highestbeta %1
 betaindex=betaindex+1;   
 
 fprintf('doing NMF with power %f and beta %f\n', power, beta);
@@ -204,39 +229,46 @@ parfor i=1:nrcomp
    nmfrec{i} = nmfrec{i}(1:size(arpegmix,2));   % cut to size
    % find the index of the current source by correlating with part of
    % mixture containing only solo voices
-   [ ~ , nmfindex{i} ] = max( nmfrec{i}(1:nrcomp*minlength) .* arpegmix(1:nrcomp*minlength) );
-   nmfindex{i} = floor(nmfindex{i}/minlength)+1;
+   % --> use perm from BSS-EVAL instead of code below
+   %[ ~ , nmfindex{i} ] = max( nmfrec{i}(1:nrcomp*minlength) .* arpegmix(1:nrcomp*minlength) );
+   %nmfindex{i} = floor(nmfindex{i}/minlength)+1;
 end
 
 % test that nmfindex is a permutation of 1:nrcomp
-if ~ismember(cell2mat(nmfindex), perms(1:nrcomp), 'rows')
-   fprintf('Could not assign extracted signals to original sources. Skipping.\n');
-   % fill up the collected data with empty values
-   savednmfrec{powerindex, betaindex} = cell(size(nmfrec));
-   mySDR{powerindex, betaindex} = [0;0;0];
-   mySIR{powerindex, betaindex} = [0;0;0];
-   mySAR{powerindex, betaindex} = [0;0;0];
-   continue;    % break loop, go to next chord/beta/power 
-end
-
-%now reorder according to correct indices.
-nmfrec(cell2mat(nmfindex)) = nmfrec;
-% save this to be able to inspect results later.
-savednmfrec{powerindex, betaindex} = nmfrec;
+%if ~ismember(cell2mat(nmfindex), perms(1:nrcomp), 'rows')
+%   fprintf('Could not assign extracted signals to original sources. Skipping.\n');
+%   % fill up the collected data with empty values
+%   savednmfrec{powerindex, betaindex} = cell(size(nmfrec));
+%   mySDR{powerindex, betaindex} = [0;0;0];
+%   mySIR{powerindex, betaindex} = [0;0;0];
+%   mySAR{powerindex, betaindex} = [0;0;0];
+%   continue;    % break loop, go to next chord/beta/power 
+%end
+%
+% %now reorder according to correct indices.
+%nmfrec(cell2mat(nmfindex)) = nmfrec;
+% %save this to be able to inspect results later.
+%savednmfrec{powerindex, betaindex} = nmfrec;
 
 %% compute the BSS-EVAL SDR metrics
 disp('computing BSS-EVAL');
 
-[mySDR{powerindex, betaindex}, mySIR{powerindex, betaindex}, mySAR{powerindex, betaindex}] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
+[mySDR{powerindex, betaindex}, mySIR{powerindex, betaindex}, mySAR{powerindex, betaindex}, myPerm{powerindex, betaindex}] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
 
 fprintf('SDR of sources 1, 2, 3: %f , %f, %f\n', mySDR{powerindex, betaindex}(1), mySDR{powerindex, betaindex}(2), mySDR{powerindex, betaindex}(3));
+%fprintf('SIR of sources 1, 2, 3: %f , %f, %f\n', mySIR{powerindex, betaindex}(1), mySIR{powerindex, betaindex}(2), mySIR{powerindex, betaindex}(3));
+%fprintf('SAR of sources 1, 2, 3: %f , %f, %f\n', mySAR{powerindex, betaindex}(1), mySAR{powerindex, betaindex}(2), mySAR{powerindex, betaindex}(3));
+
+%NOTE: BSS_EVAL 3.0 outputs metrics that are already ORDERED according to the TARGET!
+%hence, if target is given according to low, middle, high, then metrics are also in that order.
+%Only when further using extracted sources, is permJ to be used to couple to target.
 
 end %beta
 end %power
 
 %% save to file
 disp('Saving to file');
-myfilename = ['nmf-beta-test-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
+myfilename = ['nmf-beta-test2-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
 save(myfilename, 'arpegmix', 'arpegsrc', 'chords', 'datadir', 'H0', 'W0', 'hp', 'sz', 'iter', 'midibase', 'minlength', 'mixture', 'mySAR', 'mySDR', 'mySIR', 'nrcomp', 'nrcols', 'nrrows', 'nrsources', 'smap', 'filename');
 
     

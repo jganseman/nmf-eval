@@ -1,13 +1,11 @@
-% Testing divergences and powers of Beta-NMF - an experiment. 
+% Testing divergences and powers of Beta-NMF - a third experiment. 
 % Author: Joachim Ganseman, University of Antwerp, all rights reserved
-% june 2017
+% october 2017
 
 % For the STFT, we choose the corrected version from CATbox, which is available
-% in github.com/jganseman/nsgt_eval . This is the fastest STFT among the 4 
-% we tested, and also the one with the smallest reconstruction error when
-% window-corrected (option 'smooth').
+% in github.com/jganseman/nsgt_eval . 
 
-% Using the Beta-NMF implementation from G. Grindlay's NMFLIB
+% Using the Beta-NMF implementation from G. Grindlay's NMFLIB.
 % Phase is ignored in the NMF; the inverse STFT uses the original phase data.
 % For separation instead of signal reconstruction, BSS_EVAL 3.0 is used.
 
@@ -15,8 +13,10 @@
 % 3-different-note mixtures that are to be separated. Limiting ourselves
 % to reasonable MIDI range and fairly equal loudness.
 
-% Much of the code in this file is based on an earlier 2014 experiment to 
-% run the SISAL algorithm on the MAPS database.
+% In this third version of the experiment, we find an average performance
+% across 10 tries, using less iterations and a shorter signal
+
+% NOTE: full experiment takes about 1 hour / chord / set of parallel tries.
 
 %%
 clear;
@@ -73,24 +73,51 @@ nrsources=3;
 nrcomp = 3;
 sz = 1024; % stft frame size
 hp = sz / 4; % hop size
-iter = 50; % number of EM iterations
+iter = 20; % number of EM iterations
 beta = 1;
 power = 1;
+numtrials = 20;
+
+% define limits of the experiment
+lowestpower = 0.5;
+powerinc = 0.1; %1.0
+highestpower = 2.5;
+lowestbeta = 0.0;
+highestbeta = 2.5; %2.0;
+betainc = 0.1; %1.0;
+numpowers = (highestpower - lowestpower) / powerinc +1;
+numbetas = (highestbeta - lowestbeta) / betainc +1;
+mySDRs = cell([numtrials numpowers numbetas]);
+mySIRs = cell([numtrials numpowers numbetas]);
+mySARs = cell([numtrials numpowers numbetas]);
+myPerm = cell([numtrials numpowers numbetas]);
+
+% pre-initializing other arrays and cell arrays for speed
+source = cell([1 nrsources]);
+arpegsrc = cell([1 nrsources]);
+wavstft = cell([1 nrsources]);
+wavstftabs = cell([1 nrsources]);
+wavstftphase = cell([1 nrsources]);
+reconstnmf = cell([numtrials nrsources]);
+nmfrec = cell([numtrials nrsources]);
+
+W0 = cell([1 numtrials]);
+H0 = cell([1 numtrials]);
 
 %% begin a set of external loops
 
 for midibase = [60 48 72] % 84 36 96 54 66 42 78 90]
 %for thischord= 1:10
 
-% in case of testing, use
-%for midibase = 60
+% in case of testing, use:
+%for midibase = 72
 for thischord= 1
 
 %% read source files
 currentchord = chords{thischord} + midibase;
 nrsources = length(currentchord);
 
-minlength = 1000000000;
+minlength = 128000/8;     % 0.75 seconds is more than enough
 fprintf('Processing files: ')
 for i=1:nrsources
    filename = [ filestart num2str(smap(currentchord(i))) filemiddle num2str(currentchord(i)) fileend ]; 
@@ -101,9 +128,6 @@ for i=1:nrsources
    if smap(currentchord(i))     %equals 1 is implicit
        source{i} = source{i}(0.2*44100:end);
    end
-   if length(source{i}) < minlength
-       minlength = length(source{i});
-   end
 end
 % Note: minlength is much longer for cases where all sources use sustain=1
 % This is the case for: 60-63-68, 60-64-69, 60-64-68
@@ -112,14 +136,13 @@ end
 % cut sources such that they have the same length
 mixture=0;
 for i=1:nrsources
-    source{i} = source{i}(1:minlength);
+    source{i} = source{i}(22050+1:22050+minlength);
     mixture = mixture + source{i};
 end
 mixture = mixture ./ nrsources;
+%NOTE: there was still a +/- 0.5s silence in beginning of each source!
 
-% now we've got our sources in the source{} cell, and a mixture.
-% we can concatenate the sources to our mixture, to have an arpeggiated
-% chord plus the mixture. for sdr comparison later, make new sources as well
+% create arpeggiated chord plus mixture
 arpegmix = [ cell2mat(source) mixture ];
 silence=zeros(1,minlength);
 %the next lines are only for 3-note chords. adapt for 4 note!
@@ -136,7 +159,7 @@ fprintf('\nLength of mixture: %2.3f seconds.\n', minlength*4/44100);
 disp('--- Computing corrected CATbox STFTs with periodic Hann window ---');  
 % parameters: signal, window, overlap, fftsize
 
-parfor i=1:nrsources
+for i=1:nrsources
     % spectrograms, magnitudes and phases
     wavstft{i} = stft_catbox(arpegsrc{i}, hann(sz, 'periodic'), sz-hp, sz);
     wavstftabs{i} = max(abs(wavstft{i}), eps);
@@ -149,96 +172,121 @@ end
 % make original copy of stfts, to reload before each computation
 origwavstft = wavstftabs;
 origmixstft = mixstftabs;
-
-% create starting matrices;
 [nrrows, nrcols] = size(mixstftabs);
+
+%make a set of initial matrices
+for trial = 1:numtrials
+    W0{trial} = rand(nrrows, nrcomp); %W0 = W0./sum(W0, 1);
+    H0{trial} = rand(nrcomp, nrcols); %H0 = H0./sum(H0, 1);
 % IMPORTANT: DO NOT MAKE UNIFORM MATRICES. Then the columns can converge
 % to the same value if the NMF algo is deterministic. Instead, assure
 % linear independence of starting vectors in W0 -> rand
-W0 = rand(nrrows, nrcomp); %W0 = W0./sum(W0, 1);
-H0 = rand(nrcomp, nrcols); %H0 = H0./sum(H0, 1);
+end
 
-
-%% Iterate over power and beta
+% Iterate over power and beta
 powerindex=0;
 
-for power = 0.5:0.1:2.5 %1
+for power = lowestpower:powerinc:highestpower %1
 powerindex = powerindex+1;
 betaindex=0;
 
-for beta = 0.0:0.1:2.5 %1
+for beta = lowestbeta:betainc:highestbeta %1
 betaindex=betaindex+1;   
 
-fprintf('doing NMF with power %f and beta %f\n', power, beta);
+%print time
+fprintf('Starting %d NMF trials, power %f and beta %f. ', numtrials, power, beta);
+tic;
 
-%% RUN nmf_beta from Grindlay's NMFlab
-
-% reload original data    
-wavstftabs = origwavstft;
+% RUN nmf_beta from Grindlay's NMFlab
+wavstftabs = origwavstft; % reload original data  
 mixstftabs = origmixstft.^power;
-%TODO iterate over power and beta
 
-[nmfW,nmfH] = nmf_beta(mixstftabs, nrcomp,'niter', iter, 'beta', beta, 'W0', W0, 'H0', H0);
+% Do x different NMF trials in parallel
+parfor trial=1:numtrials
+
+    % perform NMFs
+    [nmfW{trial},nmfH{trial}] = nmf_beta(mixstftabs, nrcomp,'niter', iter, 'beta', beta, 'W0', W0{trial}, 'H0', H0{trial});
     % other options: 'thresh', [], 'norm_w', 1, 'norm_h', 0, 'verb', 1, 'myeps', 1e-20, 'W', [], 'H', []);
 
-%% Reconstruct sources through Generalized Wiener filtering
-% See [Liutkus, 2015] DOI 10.1109/ICASSP.2015.7177973 for justification.
+    for i=1:nrcomp
+        % Reconstruct sources through Generalized Wiener filtering (DOI 10.1109/ICASSP.2015.7177973)
+        reconstnmf{trial, i} = (nmfW{trial}(:,i)*nmfH{trial}(i,:)) ./ (nmfW{trial}*nmfH{trial}); % make mask
+        reconstnmf{trial, i} = reconstnmf{trial, i} .* mixstft; % apply to (non-raised) spectrogram
+        
+        % Inverse STFT. parameters: stft, HOPS PER WINDOW , fftsize, 'perfect'/'smooth'
+        nmfrec{trial, i} = istft_catbox( reconstnmf{trial, i}, sz/hp, sz, 'smooth' );
+        nmfrec{trial, i} = nmfrec{trial, i}(1:size(arpegmix,2));   % cut to size
+    end
+    
+end %parfor NMFs
 
-parfor i=1:nrcomp
-    % first, create all masks  
-    reconstnmf{i} = (nmfW(:,i)*nmfH(i,:)) ./ (nmfW*nmfH);
-    % apply (raised) masks to original (non-raised) spectrogram
-    reconstnmf{i} = reconstnmf{i} .* mixstft;
-end
+%print time
+timenmf = toc;
+fprintf('- Took %f seconds.\n', timenmf);
+fprintf('Computing %d BSS_EVAL metrics. ', numtrials);
+tic;
 
-%% TODO sort spectrograms? Maybe best to correlate the reconstructed sources...
-% or just pick the highest coefficient of all possible source/reconstr combinations?
-% see also https://www.researchgate.net/post/how_to_measure_the_similarity_between_two_signal
-% --> maybe correlate the average spectra in frames defined
+% Do x different BSS_EVAL calculations in parallel
+% Can not be merged in previous loop for some strange reason
+parfor trial=1:numtrials
 
-%% Inverse STFT
-disp('Inverse STFT calculation');
-% parameters: stft, HOPS PER WINDOW , fftsize, 'perfect'/'smooth'
-parfor i=1:nrcomp 
-   nmfrec{i} = istft_catbox( reconstnmf{i}, sz/hp, sz, 'smooth' );
-   nmfrec{i} = nmfrec{i}(1:size(arpegmix,2));   % cut to size
-   % find the index of the current source by correlating with part of
-   % mixture containing only solo voices
-   [ ~ , nmfindex{i} ] = max( nmfrec{i}(1:nrcomp*minlength) .* arpegmix(1:nrcomp*minlength) );
-   nmfindex{i} = floor(nmfindex{i}/minlength)+1;
-end
+    [mySDRs{trial, powerindex, betaindex}, mySIRs{trial, powerindex, betaindex}, mySARs{trial, powerindex, betaindex}, myPerm{trial, powerindex, betaindex}] =  bss_eval_sources( cat(1, nmfrec{trial, :}), cell2mat(arpegsrc'));
+    %fprintf('Trial %d SDR of sources 1, 2, 3: %f , %f, %f\n', trial, mySDRs{trial, powerindex, betaindex}(1), mySDRs{trial, powerindex, betaindex}(2), mySDRs{trial, powerindex, betaindex}(3));
+    %NOTE: BSS_EVAL 3.0 outputs metrics that are already ORDERED according to the TARGET!
 
-% test that nmfindex is a permutation of 1:nrcomp
-if ~ismember(cell2mat(nmfindex), perms(1:nrcomp), 'rows')
-   fprintf('Could not assign extracted signals to original sources. Skipping.\n');
-   % fill up the collected data with empty values
-   savednmfrec{powerindex, betaindex} = cell(size(nmfrec));
-   mySDR{powerindex, betaindex} = [0;0;0];
-   mySIR{powerindex, betaindex} = [0;0;0];
-   mySAR{powerindex, betaindex} = [0;0;0];
-   continue;    % break loop, go to next chord/beta/power 
-end
-
-%now reorder according to correct indices.
-nmfrec(cell2mat(nmfindex)) = nmfrec;
-% save this to be able to inspect results later.
-savednmfrec{powerindex, betaindex} = nmfrec;
-
-%% compute the BSS-EVAL SDR metrics
-disp('computing BSS-EVAL');
-
-[mySDR{powerindex, betaindex}, mySIR{powerindex, betaindex}, mySAR{powerindex, betaindex}] =  bss_eval_sources(cell2mat(nmfrec'), cell2mat(arpegsrc'));
-
-fprintf('SDR of sources 1, 2, 3: %f , %f, %f\n', mySDR{powerindex, betaindex}(1), mySDR{powerindex, betaindex}(2), mySDR{powerindex, betaindex}(3));
+end %parfor BSS_EVAL    
+timebss = toc;
+fprintf('- Took %f seconds.\n', timebss);
 
 end %beta
 end %power
 
+%% compute statistics on all trials (manually to make sure we sum correct dimensions)
+
+powerindex=0;
+for power = lowestpower:powerinc:highestpower %1
+powerindex = powerindex+1;
+betaindex=0;
+for beta = lowestbeta:betainc:highestbeta %1
+betaindex=betaindex+1;    
+    % means : concat each trial in column, calc mean over rows
+    mySDRmean{powerindex, betaindex} = mean( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
+    mySIRmean{powerindex, betaindex} = mean( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
+    mySARmean{powerindex, betaindex} = mean( cat(2, mySARs{:, powerindex, betaindex}) , 2);
+    % medians
+    mySDRmedian{powerindex, betaindex} = median( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
+    mySIRmedian{powerindex, betaindex} = median( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
+    mySARmedian{powerindex, betaindex} = median( cat(2, mySARs{:, powerindex, betaindex}) , 2);
+    % stddevs
+    mySDRstddev{powerindex, betaindex} = std( cat(2, mySDRs{:, powerindex, betaindex}) , 0, 2);
+    mySIRstddev{powerindex, betaindex} = std( cat(2, mySIRs{:, powerindex, betaindex}) , 0, 2);
+    mySARstddev{powerindex, betaindex} = std( cat(2, mySARs{:, powerindex, betaindex}) , 0, 2);
+    % max
+    mySDRmax{powerindex, betaindex} = max( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
+    mySIRmax{powerindex, betaindex} = max( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
+    mySARmax{powerindex, betaindex} = max( cat(2, mySARs{:, powerindex, betaindex}) , 2);    
+    % min
+    mySDRmin{powerindex, betaindex} = min( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
+    mySIRmin{powerindex, betaindex} = min( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
+    mySARmin{powerindex, betaindex} = min( cat(2, mySARs{:, powerindex, betaindex}) , 2);  
+    
+end %beta
+end %power
+
+%default to mean:
+mySDR = mySDRmean;
+mySIR = mySIRmean;
+mySAR = mySARmean;
+
 %% save to file
 disp('Saving to file');
-myfilename = ['nmf-beta-test-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
-save(myfilename, 'arpegmix', 'arpegsrc', 'chords', 'datadir', 'H0', 'W0', 'hp', 'sz', 'iter', 'midibase', 'minlength', 'mixture', 'mySAR', 'mySDR', 'mySIR', 'nrcomp', 'nrcols', 'nrrows', 'nrsources', 'smap', 'filename');
+myfilename = ['nmf-beta-test4-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
+save(myfilename, 'arpegmix', 'arpegsrc', 'chords', 'datadir', 'hp', 'sz', 'iter', 'midibase', ...
+    'minlength', 'mixture', 'nrcomp', 'nrcols', 'nrrows', 'nrsources', 'smap', ...
+    'mySARmean', 'mySDRmean', 'mySIRmean', 'mySARmedian', 'mySDRmedian', 'mySIRmedian', ...
+    'mySARmax', 'mySDRmax', 'mySIRmax', 'mySARmin', 'mySDRmin', 'mySIRmin', ...
+    'mySARstddev', 'mySDRstddev', 'mySIRstddev', 'mySAR', 'mySDR', 'mySIR', ...
+    'filename');
 
-    
 end %thischord
 end %midibase
