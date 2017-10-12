@@ -68,6 +68,9 @@ smap(80) = 0; smap(81) = 1; smap(82) = 1; smap(83) = 0; smap(84) = 1; smap(85) =
 smap(90) = 0; smap(91) = 0; smap(92) = 1; smap(93) = 0; smap(94) = 0; smap(95) = 1; smap(96) = 1; smap(97) = 0; smap(98) = 0; smap(99) = 0; 
 smap(100) = 0; smap(31) = 0; smap(102) = 0; smap(103) = 0; smap(104) = 0; smap(105) = 1; smap(106) = 0; smap(107) = 0; smap(108) = 1; 
 
+%write output to filename with test ID: 
+thistest = 4; 
+
 %% Setup of STFT and NMF parameters
 nrsources=3;
 nrcomp = 3;
@@ -262,10 +265,12 @@ betaindex=betaindex+1;
     mySIRstddev{powerindex, betaindex} = std( cat(2, mySIRs{:, powerindex, betaindex}) , 0, 2);
     mySARstddev{powerindex, betaindex} = std( cat(2, mySARs{:, powerindex, betaindex}) , 0, 2);
     % max
+    % TODO FIX : does not return data in same format as mean or median
     mySDRmax{powerindex, betaindex} = max( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
     mySIRmax{powerindex, betaindex} = max( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
     mySARmax{powerindex, betaindex} = max( cat(2, mySARs{:, powerindex, betaindex}) , 2);    
     % min
+    % TODO FIX : does not return data in same format as mean or median
     mySDRmin{powerindex, betaindex} = min( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
     mySIRmin{powerindex, betaindex} = min( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
     mySARmin{powerindex, betaindex} = min( cat(2, mySARs{:, powerindex, betaindex}) , 2);  
@@ -280,7 +285,7 @@ mySAR = mySARmean;
 
 %% save to file
 disp('Saving to file');
-myfilename = ['nmf-beta-test4-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
+myfilename = ['nmf-beta-test' int2str(thistest) '-chord' int2str(thischord) '-base' int2str(midibase) '.mat']; 
 save(myfilename, 'arpegmix', 'arpegsrc', 'chords', 'datadir', 'hp', 'sz', 'iter', 'midibase', ...
     'minlength', 'mixture', 'nrcomp', 'nrcols', 'nrrows', 'nrsources', 'smap', ...
     'mySARmean', 'mySDRmean', 'mySIRmean', 'mySARmedian', 'mySDRmedian', 'mySIRmedian', ...
