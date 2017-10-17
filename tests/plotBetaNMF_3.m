@@ -265,15 +265,13 @@ betaindex=betaindex+1;
     mySIRstddev{powerindex, betaindex} = std( cat(2, mySIRs{:, powerindex, betaindex}) , 0, 2);
     mySARstddev{powerindex, betaindex} = std( cat(2, mySARs{:, powerindex, betaindex}) , 0, 2);
     % max
-    % TODO FIX : does not return data in same format as mean or median
-    mySDRmax{powerindex, betaindex} = max( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
-    mySIRmax{powerindex, betaindex} = max( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
-    mySARmax{powerindex, betaindex} = max( cat(2, mySARs{:, powerindex, betaindex}) , 2);    
+    mySDRmax{powerindex, betaindex} = max( cat(2, mySDRs{:, powerindex, betaindex}) , [], 2);
+    mySIRmax{powerindex, betaindex} = max( cat(2, mySIRs{:, powerindex, betaindex}) , [], 2);
+    mySARmax{powerindex, betaindex} = max( cat(2, mySARs{:, powerindex, betaindex}) , [], 2);    
     % min
-    % TODO FIX : does not return data in same format as mean or median
-    mySDRmin{powerindex, betaindex} = min( cat(2, mySDRs{:, powerindex, betaindex}) , 2);
-    mySIRmin{powerindex, betaindex} = min( cat(2, mySIRs{:, powerindex, betaindex}) , 2);
-    mySARmin{powerindex, betaindex} = min( cat(2, mySARs{:, powerindex, betaindex}) , 2);  
+    mySDRmin{powerindex, betaindex} = min( cat(2, mySDRs{:, powerindex, betaindex}) , [], 2);
+    mySIRmin{powerindex, betaindex} = min( cat(2, mySIRs{:, powerindex, betaindex}) , [], 2);
+    mySARmin{powerindex, betaindex} = min( cat(2, mySARs{:, powerindex, betaindex}) , [], 2);  
     
 end %beta
 end %power

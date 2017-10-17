@@ -68,7 +68,7 @@ legend(...
     {'$d_{Pearson}(x|y=1) = \frac{1}{2}(x-1)^2$',...    %\alpha = 2 :  
     '$d_{KL}(x|y=1) = x log(x) - x + 1$',...                %\alpha = 1 : 
     '$d_{Hellinger}(x|y=1) = 2 (\sqrt{x} -1)^2$',...  %\alpha = 0.5 : 
-    '$d_{KLdual}(x|y=1) = -log(x) +x -1$',...     %\alpha = 0 :
+    '$d_{KLdual}(x|y=1) = x -log(x) -1$',...     %\alpha = 0 :
     '$d_{Neyman}(x|y=1) = \frac{1}{2} (\frac{1}{x} +x -2)$'},...     %\alpha = 0 :
     'Interpreter', 'latex', 'Location', 'southeast')
 ylim([0 10]); %limit plot height to y=10
@@ -231,6 +231,9 @@ yticks(1:5:26); yticklabels({'0.0', '0.5', '1.0', '1.5', '2.0', '2.5'});
 % draw lines of maxima along x and y-axis
 [~, xmaxes] = max(source10sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
 [~, ymaxes] = max(source10sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+% draw 1/x curve
+dinv = @(x) 1./x;
+hold on; plot(1:0.1:21, feval(dinv, 0.5:0.01:2.5).*10+1, '--b', 'LineWidth', 1); hold off;
 grid on; colorbar;
 
 
