@@ -14,7 +14,7 @@
 % to reasonable MIDI range and fairly equal loudness.
 
 % In this third version of the experiment, we find an average performance
-% across 10 tries, using less iterations and a shorter signal
+% across 20 tries, using less iterations and a shorter signal
 
 % NOTE: full experiment takes about 1 hour / chord / set of parallel tries.
 
@@ -113,7 +113,7 @@ for midibase = [60 48 72] % 84 36 96 54 66 42 78 90]
 %for thischord= 1:10
 
 % in case of testing, use:
-%for midibase = 72
+%for midibase = 60
 for thischord= 1
 
 %% read source files

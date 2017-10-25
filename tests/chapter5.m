@@ -83,165 +83,40 @@ end
 % arguments: mean, median, stddev, (min, max) 
 % (note: min, max currently not working due to data generation error in plotBetaNMF_3)
 
-disp('display bss_eval metrics separating C4-E4-G4 piano chord.')
-make33grid('nmf-beta-test4-chord1-base48.mat', 'median');
+disp('display bss_eval metrics separating C4-E4-G4 piano chord w/ beta-nmf.')
+make33grid('nmf-beta-test4-chord1-base48.mat', 'median', 'beta');
 
 %%
-disp('display bss_eval metrics separating C5-E5-G5 piano chord.')
-make33grid('nmf-beta-test4-chord1-base60.mat', 'median');
+disp('display bss_eval metrics separating C5-E5-G5 piano chord w/ beta-nmf.')
+make33grid('nmf-beta-test4-chord1-base60.mat', 'median', 'beta');
 
 %%
-disp('display bss_eval metrics separating C6-E6-G6 piano chord.')
-make33grid('nmf-beta-test4-chord1-base72.mat', 'median');
+disp('display bss_eval metrics separating C6-E6-G6 piano chord w/ beta-nmf.')
+make33grid('nmf-beta-test4-chord1-base72.mat', 'median', 'beta');
 
+%%
+disp('display bss_eval metrics separating C4-E4-G4 piano chord w/ alpha-nmf.')
+make33grid('nmf-alpha-test1-chord1-base48.mat', 'median', 'alpha');
+
+%%
+disp('display bss_eval metrics separating C5-E5-G5 piano chord w/ alpha-nmf.')
+make33grid('nmf-alpha-test1-chord1-base60.mat', 'median', 'alpha');
+
+%%
+disp('display bss_eval metrics separating C6-E6-G6 piano chord w/ alpha-nmf.')
+make33grid('nmf-alpha-test1-chord1-base72.mat', 'median', 'alpha');
 
 %% Turns out, best course of action is probably to display all SDR graphs. 
 % SIR roughly corresponds, but is less tight/strict. 
 % SAR is erratic, can go anywhere.
 
-colormin = 0;
-% to decide maximum of color bar, check:
-% max(max([ source1sdr source2sdr source3sdr source4sdr source5sdr source6sdr source7sdr source8sdr source9sdr ] ))
-colormax = 23;
+% moved to separate function at the bottom of this file
+disp('display mean beta-nmf SDR test results.')
+make33sdrbeta('mean', PRINTTOFILE);
 
-load('nmf-beta-test4-chord1-base48.mat');
-maketable = cell2mat(mySDR);
-source1sdr = maketable(1:3:end, :)'; source1sdr = max(colormin, source1sdr);
-source2sdr = maketable(2:3:end, :)'; source2sdr = max(colormin, source2sdr);
-source3sdr = maketable(3:3:end, :)'; source3sdr = max(colormin, source3sdr);
-load('nmf-beta-test4-chord1-base60.mat');
-maketable = cell2mat(mySDR);
-source4sdr = maketable(1:3:end, :)'; source4sdr = max(colormin, source4sdr);
-source5sdr = maketable(2:3:end, :)'; source5sdr = max(colormin, source5sdr);
-source6sdr = maketable(3:3:end, :)'; source6sdr = max(colormin, source6sdr);
-load('nmf-beta-test4-chord1-base72.mat');
-maketable = cell2mat(mySDR);
-source7sdr = maketable(1:3:end, :)'; source7sdr = max(colormin, source7sdr);
-source8sdr = maketable(2:3:end, :)'; source8sdr = max(colormin, source8sdr);
-source9sdr = maketable(3:3:end, :)'; source9sdr = max(colormin, source9sdr);
-
-nrcontours = 20;
-myfontsize = 9;
-figure1 = figure;
-axes1 = axes('Parent',figure1);
-sprows = 4;
-spcols = 3;
-
-
-s1ax = subplot(sprows, spcols, 1);
-contourf(source1sdr, nrcontours);
-title('C4 (MIDI:48) mean SDR', 'fontsize', myfontsize); ylabel('Beta'); %xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source1sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source1sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s2ax = subplot(sprows, spcols, 2);
-contourf(source2sdr, nrcontours);
-title('E4 (MIDI:52) mean SDR', 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source2sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source2sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s3ax = subplot(sprows, spcols, 3);
-contourf(source3sdr, nrcontours);
-title('G4 (MIDI:55) mean SDR', 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source3sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source3sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s4ax = subplot(sprows, spcols, 4);
-contourf(source4sdr, nrcontours);
-title('C5 (MIDI:60) mean SDR', 'fontsize', myfontsize); ylabel('Beta'); %xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source4sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source4sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s5ax = subplot(sprows, spcols, 5);
-contourf(source5sdr, nrcontours);
-title('E5 (MIDI:64) mean SDR', 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source5sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source5sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s6ax = subplot(sprows, spcols, 6);
-contourf(source6sdr, nrcontours);
-title('G5 (MIDI:67) mean SDR', 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source6sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source6sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s7ax = subplot(sprows, spcols, 7);
-contourf(source7sdr, nrcontours);
-title('C6 (MIDI:72) mean SDR', 'fontsize', myfontsize); ylabel('Beta'); xlabel('exponent');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source7sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source7sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar;
-
-s8ax = subplot(sprows, spcols, 8);
-contourf(source8sdr, nrcontours);
-title('E6 (MIDI:76) mean SDR', 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Beta');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source8sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source8sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar('southoutside')
-
-s9ax = subplot(sprows, spcols, 9);
-contourf(source9sdr, nrcontours);
-title('G6 (MIDI:79) mean SDR', 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Beta');
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source9sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source9sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-grid on; caxis([colormin colormax]); %colorbar('Ticks',[0,5,10,15,20,25]); 
-
-% set/link axes
-set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
-    'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
-    [1 6 11 16 21 26],'YTickLabel',{'0.0','0.5','1.0','1.5','2.0','2.5'},...
-    'XMinorTick','on','XTick',[1 6 11 16 21],'XTickLabel',...
-    {'0.5','1.0','1.5','2.0','2.5'});
-linkaxes([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],'xy');
-
-% put colorbar in new row
-s11ax = subplot(sprows, spcols, 11);
-axis off; caxis([colormin colormax]);
-colorbar('northoutside', 'Ticks',[0,5,10,15,20,25]);
-
-
-%% if wanted, print to file
-if PRINTTOFILE
-    filename = '../../../thesis/images/chapter5/betavsexponent.tex';
-    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
-end
-
-
-%% Just for the fun of it, plot the average across all notes
-source10sdr = (source1sdr+source2sdr+source3sdr+source4sdr+source5sdr+source6sdr+source7sdr+source8sdr+source9sdr)./9.0;
-figure2 = figure;
-contourf(source10sdr, nrcontours);
-title('mean SDR across 9 different notes'); ylabel('Beta'); xlabel('exponent');
-xticks(1:5:21); xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'});
-yticks(1:5:26); yticklabels({'0.0', '0.5', '1.0', '1.5', '2.0', '2.5'});
-% draw lines of maxima along x and y-axis
-[~, xmaxes] = max(source10sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
-[~, ymaxes] = max(source10sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
-% draw 1/x curve
-dinv = @(x) 1./x;
-hold on; plot(1:0.1:21, feval(dinv, 0.5:0.01:2.5).*10+1, '--b', 'LineWidth', 1); hold off;
-grid on; colorbar;
-
-
-%% if wanted, print to file
-if PRINTTOFILE
-    filename = '../../../thesis/images/chapter5/betavsexponentmean.tex';
-    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
-end
+%% moved to separate function at the bottom of this file
+disp('display mean alpha-nmf SDR test results.')
+make33sdralpha('mean', PRINTTOFILE);
 
 
 %%
@@ -249,7 +124,7 @@ end
 
 % make a 3x3 grid of the SDR, SIR and SAR variables in given .mat file
 
-function make33grid(variablename, whattoplot)
+function make33grid(variablename, whattoplot, usedalg)
 
 load(variablename);
 
@@ -301,7 +176,7 @@ contourf(source1sdr, nrcontours);
 colorbar;
 title('C SDR', 'fontsize', myfontsize);
 grid on;
-ylabel('Beta');
+ylabel(usedalg);
 % draw line of maxima along x-axis
 [~, xmaxes] = max(source1sdr);
 hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
@@ -365,7 +240,7 @@ contourf(source1sir, nrcontours);
 colorbar;
 title('C SIR', 'fontsize', myfontsize);
 grid on;
-ylabel('Beta');
+ylabel(usedalg);
 % draw line of maxima along x-axis
 [~, xmaxes] = max(source1sir);
 hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
@@ -430,7 +305,7 @@ contourf(source1sar, nrcontours);
 colorbar;
 title('C SAR', 'fontsize', myfontsize);
 grid on;
-ylabel('Beta');
+ylabel(usedalg);
 xlabel('exponent');
 % draw line of maxima along x-axis
 [~, xmaxes] = max(source1sar);
@@ -468,11 +343,403 @@ hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '
 hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
 
 %% set axes
+
+switch usedalg
+    case 'beta'
+        set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
+        'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
+        [1 6 11 16 21 26],'YTickLabel',{'0.0','0.5','1.0','1.5','2.0','2.5'},...
+        'XMinorTick','on','XTick',[1 6 11 16 21],'XTickLabel',...
+        {'0.5','1.0','1.5','2.0','2.5'});
+    case 'alpha'
+        set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
+        'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
+        [1 5 9 13],'YTickLabel',{'-1.0','0.0','1.0', '2.0'},...
+        'XMinorTick','on','XTick',[1 3 5 7 9],'XTickLabel',...
+        {'0.5','1.0','1.5','2.0','2.5'});
+    otherwise %default to beta
+        set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
+        'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
+        [1 6 11 16 21 26],'YTickLabel',{'0.0','0.5','1.0','1.5','2.0','2.5'},...
+        'XMinorTick','on','XTick',[1 6 11 16 21],'XTickLabel',...
+        {'0.5','1.0','1.5','2.0','2.5'});
+end
+
+end %function make33grid
+
+
+%%
+% ================================================================== %
+
+% make a 3x3 grid of all SDR variables in given .mat file, with color bar 
+% separately at the bottom. (To export to EPS and then include in TeX)
+
+function make33sdrbeta(whattoplot, PRINTTOFILE)
+
+colormin = 0;
+% to decide maximum of color bar, check:
+% max(max([ source1sdr source2sdr source3sdr source4sdr source5sdr source6sdr source7sdr source8sdr source9sdr ] ))
+colormax = 23;
+
+load('nmf-beta-test4-chord1-base48.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source1sdr = maketable(1:3:end, :)'; source1sdr = max(colormin, source1sdr);
+source2sdr = maketable(2:3:end, :)'; source2sdr = max(colormin, source2sdr);
+source3sdr = maketable(3:3:end, :)'; source3sdr = max(colormin, source3sdr);
+load('nmf-beta-test4-chord1-base60.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source4sdr = maketable(1:3:end, :)'; source4sdr = max(colormin, source4sdr);
+source5sdr = maketable(2:3:end, :)'; source5sdr = max(colormin, source5sdr);
+source6sdr = maketable(3:3:end, :)'; source6sdr = max(colormin, source6sdr);
+load('nmf-beta-test4-chord1-base72.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source7sdr = maketable(1:3:end, :)'; source7sdr = max(colormin, source7sdr);
+source8sdr = maketable(2:3:end, :)'; source8sdr = max(colormin, source8sdr);
+source9sdr = maketable(3:3:end, :)'; source9sdr = max(colormin, source9sdr);
+
+nrcontours = 20;
+myfontsize = 9;
+figure1 = figure;
+axes1 = axes('Parent',figure1);
+sprows = 4;
+spcols = 3;
+
+s1ax = subplot(sprows, spcols, 1);
+contourf(source1sdr, nrcontours);
+title(['C4 (MIDI:48) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Beta'); %xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source1sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source1sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s2ax = subplot(sprows, spcols, 2);
+contourf(source2sdr, nrcontours);
+title(['E4 (MIDI:52) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source2sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source2sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s3ax = subplot(sprows, spcols, 3);
+contourf(source3sdr, nrcontours);
+title(['G4 (MIDI:55) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source3sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source3sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s4ax = subplot(sprows, spcols, 4);
+contourf(source4sdr, nrcontours);
+title(['C5 (MIDI:60) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Beta'); %xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source4sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source4sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s5ax = subplot(sprows, spcols, 5);
+contourf(source5sdr, nrcontours);
+title(['E5 (MIDI:64) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source5sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source5sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s6ax = subplot(sprows, spcols, 6);
+contourf(source6sdr, nrcontours);
+title(['G5 (MIDI:67) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Beta'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source6sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source6sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s7ax = subplot(sprows, spcols, 7);
+contourf(source7sdr, nrcontours);
+title(['C6 (MIDI:72) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Beta'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source7sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source7sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s8ax = subplot(sprows, spcols, 8);
+contourf(source8sdr, nrcontours);
+title(['E6 (MIDI:76) ' whattoplot ' SDR'], 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Beta');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source8sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source8sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar('southoutside')
+
+s9ax = subplot(sprows, spcols, 9);
+contourf(source9sdr, nrcontours);
+title(['G6 (MIDI:79) ' whattoplot ' SDR'], 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Beta');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source9sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source9sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar('Ticks',[0,5,10,15,20,25]); 
+
+% set/link axes
 set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
     'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
     [1 6 11 16 21 26],'YTickLabel',{'0.0','0.5','1.0','1.5','2.0','2.5'},...
     'XMinorTick','on','XTick',[1 6 11 16 21],'XTickLabel',...
     {'0.5','1.0','1.5','2.0','2.5'});
+linkaxes([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],'xy');
 
+% put colorbar in new row
+s11ax = subplot(sprows, spcols, 11);
+axis off; caxis([colormin colormax]);
+colorbar('northoutside', 'Ticks',[0,5,10,15,20,25]);
 
-end %function make33grid
+%% if wanted, print to file
+if PRINTTOFILE
+    filename = '../../../thesis/images/chapter5/betafig.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end
+
+%% Just for the fun of it, plot the average across all notes
+source10sdr = (source1sdr+source2sdr+source3sdr+source4sdr+source5sdr+source6sdr+source7sdr+source8sdr+source9sdr)./9.0;
+figure2 = figure;
+contourf(source10sdr, nrcontours);
+title([whattoplot ' SDR across 9 different notes']); ylabel('beta'); xlabel('exponent');
+xticks(1:5:21); xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'});
+yticks(1:5:26); yticklabels({'0.0', '0.5', '1.0', '1.5', '2.0', '2.5'});
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source10sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source10sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+% draw 1/x curve
+dinv = @(x) 1./x;
+hold on; plot(1:0.1:21, feval(dinv, 0.5:0.01:2.5).*10+1, '--b', 'LineWidth', 1); hold off;
+grid on; colorbar;
+
+%% if wanted, print to file
+if PRINTTOFILE
+    filename = ['../../../thesis/images/chapter5/betavsexponent' whattoplot '.tex'];
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end
+
+end %function make33sdrbeta
+
+% make a 3x3 grid of all SDR variables in given .mat file, with color bar 
+% separately at the bottom. (To export to EPS and then include in TeX)
+
+function make33sdralpha(whattoplot, PRINTTOFILE)
+
+colormin = 0;
+% to decide maximum of color bar, check:
+% max(max([ source1sdr source2sdr source3sdr source4sdr source5sdr source6sdr source7sdr source8sdr source9sdr ] ))
+colormax = 23;
+
+load('nmf-alpha-test1-chord1-base48.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source1sdr = maketable(1:3:end, :)'; source1sdr = max(colormin, source1sdr);
+source2sdr = maketable(2:3:end, :)'; source2sdr = max(colormin, source2sdr);
+source3sdr = maketable(3:3:end, :)'; source3sdr = max(colormin, source3sdr);
+load('nmf-alpha-test1-chord1-base60.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source4sdr = maketable(1:3:end, :)'; source4sdr = max(colormin, source4sdr);
+source5sdr = maketable(2:3:end, :)'; source5sdr = max(colormin, source5sdr);
+source6sdr = maketable(3:3:end, :)'; source6sdr = max(colormin, source6sdr);
+load('nmf-alpha-test1-chord1-base72.mat');
+switch whattoplot
+    case 'max'
+        maketable = cell2mat(mySDRmax);
+    case 'min'
+        maketable = cell2mat(mySDRmin);
+    case 'mean'
+        maketable = cell2mat(mySDRmean);
+    case 'median'
+        maketable = cell2mat(mySDRmedian);
+    case 'stddev'
+        maketable = cell2mat(mySDRstddev);
+    otherwise
+        maketable = cell2mat(mySDR);% cat(1,mySDR{:})); % put into tabular format
+end  
+source7sdr = maketable(1:3:end, :)'; source7sdr = max(colormin, source7sdr);
+source8sdr = maketable(2:3:end, :)'; source8sdr = max(colormin, source8sdr);
+source9sdr = maketable(3:3:end, :)'; source9sdr = max(colormin, source9sdr);
+
+nrcontours = 20;
+myfontsize = 9;
+figure1 = figure;
+axes1 = axes('Parent',figure1);
+sprows = 4;
+spcols = 3;
+
+s1ax = subplot(sprows, spcols, 1);
+contourf(source1sdr, nrcontours);
+title(['C4 (MIDI:48) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Alpha'); %xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source1sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source1sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s2ax = subplot(sprows, spcols, 2);
+contourf(source2sdr, nrcontours);
+title(['E4 (MIDI:52) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Alpha'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source2sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source2sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s3ax = subplot(sprows, spcols, 3);
+contourf(source3sdr, nrcontours);
+title(['G4 (MIDI:55) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Alpha'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source3sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source3sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s4ax = subplot(sprows, spcols, 4);
+contourf(source4sdr, nrcontours);
+title(['C5 (MIDI:60) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Alpha'); %xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source4sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source4sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s5ax = subplot(sprows, spcols, 5);
+contourf(source5sdr, nrcontours);
+title(['E5 (MIDI:64) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Alpha'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source5sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source5sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s6ax = subplot(sprows, spcols, 6);
+contourf(source6sdr, nrcontours);
+title(['G5 (MIDI:67) ' whattoplot ' SDR'], 'fontsize', myfontsize); %ylabel('Alpha'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source6sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source6sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s7ax = subplot(sprows, spcols, 7);
+contourf(source7sdr, nrcontours);
+title(['C6 (MIDI:72) ' whattoplot ' SDR'], 'fontsize', myfontsize); ylabel('Alpha'); xlabel('exponent');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source7sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source7sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar;
+
+s8ax = subplot(sprows, spcols, 8);
+contourf(source8sdr, nrcontours);
+title(['E6 (MIDI:76) ' whattoplot ' SDR'], 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Alpha');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source8sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source8sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar('southoutside')
+
+s9ax = subplot(sprows, spcols, 9);
+contourf(source9sdr, nrcontours);
+title(['G6 (MIDI:79) ' whattoplot ' SDR'], 'fontsize', myfontsize); xlabel('exponent'); %ylabel('Alpha');
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source9sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source9sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+grid on; caxis([colormin colormax]); %colorbar('Ticks',[0,5,10,15,20,25]); 
+
+% set/link axes
+set([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],...
+        'BoxStyle','full','Layer','top','YMinorTick','on','YTick',...
+        [1 5 9 13],'YTickLabel',{'-1.0','0.0','1.0', '2.0'},...
+        'XMinorTick','on','XTick',[1 3 5 7 9],'XTickLabel',...
+        {'0.5','1.0','1.5','2.0','2.5'});
+linkaxes([s1ax, s2ax, s3ax, s4ax, s5ax, s6ax, s7ax, s8ax, s9ax],'xy');
+
+% put colorbar in new row
+s11ax = subplot(sprows, spcols, 11);
+axis off; caxis([colormin colormax]);
+colorbar('northoutside', 'Ticks',[0,5,10,15,20,25]);
+
+%% if wanted, print to file
+if PRINTTOFILE
+    filename = '../../../thesis/images/chapter5/alphafig.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end
+
+%% Just for the fun of it, plot the average across all notes
+source10sdr = (source1sdr+source2sdr+source3sdr+source4sdr+source5sdr+source6sdr+source7sdr+source8sdr+source9sdr)./9.0;
+figure2 = figure;
+contourf(source10sdr, nrcontours);
+title([whattoplot ' SDR across 9 different notes']); ylabel('alpha'); xlabel('exponent');
+xticks([1 3 5 7 9]); xticklabels({'0.5', '1.0', '1.5', '2.0', '2.5'});
+yticks([1 5 9 13]); yticklabels({'-1.0','0.0','1.0', '2.0'});
+% draw lines of maxima along x and y-axis
+[~, xmaxes] = max(source10sdr); hold on; plot( 1:1:size(xmaxes,2) , xmaxes, 'red', 'LineWidth', 1.0, 'Marker', '*'); hold off;
+[~, ymaxes] = max(source10sdr'); hold on; plot( ymaxes , 1:1:size(ymaxes,2), 'green', 'LineWidth', 1.0, 'Marker', 'd'); hold off;
+% draw 1/x curve
+dinv = @(x) 1./x;
+%hold on; plot(1:0.1:21, feval(dinv, 0.5:0.01:2.5).*10+1, '--b', 'LineWidth', 1); hold off;
+grid on; colorbar;
+
+%% if wanted, print to file
+if PRINTTOFILE
+    filename = ['../../../thesis/images/chapter5/betavsexponent' whattoplot '.tex'];
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end
+
+end %function make33sdralpha
+
