@@ -68,6 +68,7 @@ fprintf('      Normalized Reconstruction Error: %e \n',rec_err);
 
 MySTFTabs = abs(MySTFT)+eps;
 phase = MySTFT./MySTFTabs;
+[numrows,numcols] = size(MySTFTabs);
 
 %% TEST APD's AccNMF MUacc
 % N. Gillis and F. Glineur, "Accelerated Multiplicative Updates and 
@@ -112,11 +113,17 @@ fprintf('      APD-MUacc spectra w/ neg values?: %d \n',apd_muacc_W_neg);
 fprintf('      APD-MUacc coeffs w/ neg values?: %d \n',apd_muacc_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_muacc_newsig)/norm(origMix);
-fprintf('      APD-MUacc Normalized Reconstruction Error: %e \n',rec_err);
+apd_muacc_rec_err = norm(origMix-apd_muacc_newsig)/norm(origMix);
+fprintf('      APD-MUacc Normalized Reconstruction Error: %e \n',apd_muacc_rec_err);
+
+%compute log spect distance
+apd_muacc_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_muacc(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-MUacc Final Log Spectral Distance: %e \n',apd_muacc_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_muacc_SDR apd_muacc_SIR apd_muacc_SAR] = bss_eval_sources(apd_muacc_newsig',origMix');
+[apd_muacc_SDR, apd_muacc_SIR, apd_muacc_SAR] = bss_eval_sources(apd_muacc_newsig',origMix');
 fprintf('      APD-MUacc SDR: %f \t SIR: %f \t SAR: %f \n',apd_muacc_SDR, apd_muacc_SIR, apd_muacc_SAR);
 
 disp('--- Finished ---')
@@ -160,11 +167,18 @@ fprintf('      APD-PGLINacc spectra w/ neg values?: %d \n',apd_pglinacc_W_neg);
 fprintf('      APD-PGLINacc coeffs w/ neg values?: %d \n',apd_pglinacc_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_pglinacc_newsig)/norm(origMix);
-fprintf('      APD-PGLINacc Normalized Reconstruction Error: %e \n',rec_err);
+apd_pglinacc_rec_err = norm(origMix-apd_pglinacc_newsig)/norm(origMix);
+fprintf('      APD-PGLINacc Normalized Reconstruction Error: %e \n',apd_pglinacc_rec_err);
+
+%compute log spect distance
+apd_pglinacc_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_pglinacc(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-PGLINacc Final Log Spectral Distance: %e \n',apd_pglinacc_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_pglinacc_SDR apd_pglinacc_SIR apd_pglinacc_SAR] = bss_eval_sources(apd_pglinacc_newsig',origMix');
+[apd_pglinacc_SDR, apd_pglinacc_SIR, apd_pglinacc_SAR] = bss_eval_sources(apd_pglinacc_newsig',origMix');
 fprintf('      APD-PGLINacc SDR: %f \t SIR: %f \t SAR: %f \n',apd_pglinacc_SDR, apd_pglinacc_SIR, apd_pglinacc_SAR);
 
 disp('--- Finished ---')
@@ -212,11 +226,17 @@ fprintf('      APD-HALSacc spectra w/ neg values?: %d \n',apd_halsacc_W_neg);
 fprintf('      APD-HALSacc coeffs w/ neg values?: %d \n',apd_halsacc_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_halsacc_newsig)/norm(origMix);
-fprintf('      APD-HALSacc Normalized Reconstruction Error: %e \n',rec_err);
+apd_halsacc_rec_err = norm(origMix-apd_halsacc_newsig)/norm(origMix);
+fprintf('      APD-HALSacc Normalized Reconstruction Error: %e \n',apd_halsacc_rec_err);
+
+%compute log spect distance
+apd_halsacc_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_halsacc(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-HALSacc Final Log Spectral Distance: %e \n',apd_halsacc_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_halsacc_SDR apd_halsacc_SIR apd_halsacc_SAR] = bss_eval_sources(apd_halsacc_newsig',origMix');
+[apd_halsacc_SDR, apd_halsacc_SIR, apd_halsacc_SAR] = bss_eval_sources(apd_halsacc_newsig',origMix');
 fprintf('      APD-HALSacc SDR: %f \t SIR: %f \t SAR: %f \n',apd_halsacc_SDR, apd_halsacc_SIR, apd_halsacc_SAR);
 
 disp('--- Finished ---')
@@ -276,11 +296,17 @@ fprintf('      APD-ActiveSet spectra w/ neg values?: %d \n',apd_actset_W_neg);
 fprintf('      APD-ActiveSet coeffs w/ neg values?: %d \n',apd_actset_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_actset_newsig)/norm(origMix);
-fprintf('      APD-ActiveSet Normalized Reconstruction Error: %e \n',rec_err);
+apd_actset_rec_err = norm(origMix-apd_actset_newsig)/norm(origMix);
+fprintf('      APD-ActiveSet Normalized Reconstruction Error: %e \n',apd_actset_rec_err);
+
+%compute log spect distance
+apd_actset_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_actset(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-ActiveSet Final Log Spectral Distance: %e \n',apd_actset_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_actset_SDR apd_actset_SIR apd_actset_SAR] = bss_eval_sources(apd_actset_newsig',origMix');
+[apd_actset_SDR, apd_actset_SIR, apd_actset_SAR] = bss_eval_sources(apd_actset_newsig',origMix');
 fprintf('      APD-ActiveSet SDR: %f \t SIR: %f \t SAR: %f \n',apd_actset_SDR, apd_actset_SIR, apd_actset_SAR);
 
 disp('--- Finished ---')
@@ -313,11 +339,17 @@ fprintf('      APD-BlockPivot spectra w/ neg values?: %d \n',apd_blockp_W_neg);
 fprintf('      APD-BlockPivot coeffs w/ neg values?: %d \n',apd_blockp_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_blockp_newsig)/norm(origMix);
-fprintf('      APD-BlockPivot Normalized Reconstruction Error: %e \n',rec_err);
+apd_blockp_rec_err = norm(origMix-apd_blockp_newsig)/norm(origMix);
+fprintf('      APD-BlockPivot Normalized Reconstruction Error: %e \n',apd_blockp_rec_err);
+
+%compute log spect distance
+apd_blockp_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_blockp(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-BlockPivot Final Log Spectral Distance: %e \n',apd_blockp_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_blockp_SDR apd_blockp_SIR apd_blockp_SAR] = bss_eval_sources(apd_blockp_newsig',origMix');
+[apd_blockp_SDR, apd_blockp_SIR, apd_blockp_SAR] = bss_eval_sources(apd_blockp_newsig',origMix');
 fprintf('      APD-BlockPivot SDR: %f \t SIR: %f \t SAR: %f \n',apd_blockp_SDR, apd_blockp_SIR, apd_blockp_SAR);
 
 disp('--- Finished ---')
@@ -367,11 +399,17 @@ fprintf('      APD-AloExact spectra w/ neg values?: %d \n',apd_aloexact_W_neg);
 fprintf('      APD-AloExact coeffs w/ neg values?: %d \n',apd_aloexact_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_aloexact_newsig)/norm(origMix);
-fprintf('      APD-AloExact Normalized Reconstruction Error: %e \n',rec_err);
+apd_aloexact_rec_err = norm(origMix-apd_aloexact_newsig)/norm(origMix);
+fprintf('      APD-AloExact Normalized Reconstruction Error: %e \n',apd_aloexact_rec_err);
+
+%compute log spect distance
+apd_aloexact_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_aloexact(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-AloExact Final Log Spectral Distance: %e \n',apd_aloexact_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_aloexact_SDR apd_aloexact_SIR apd_aloexact_SAR] = bss_eval_sources(apd_aloexact_newsig',origMix');
+[apd_aloexact_SDR, apd_aloexact_SIR, apd_aloexact_SAR] = bss_eval_sources(apd_aloexact_newsig',origMix');
 fprintf('      APD-AloExact SDR: %f \t SIR: %f \t SAR: %f \n',apd_aloexact_SDR, apd_aloexact_SIR, apd_aloexact_SAR);
 
 disp('--- Finished ---')
@@ -419,11 +457,18 @@ fprintf('      APD-FCDM spectra w/ neg values?: %d \n',apd_fcdm_W_neg);
 fprintf('      APD-FCDM coeffs w/ neg values?: %d \n',apd_fcdm_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_fcdm_newsig)/norm(origMix);
-fprintf('      APD-FCDM Normalized Reconstruction Error: %e \n',rec_err);
+apd_fcdm_rec_err = norm(origMix-apd_fcdm_newsig)/norm(origMix);
+fprintf('      APD-FCDM Normalized Reconstruction Error: %e \n',apd_fcdm_rec_err);
+
+%compute log spect distance
+apd_fcdm_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_fcdm(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-FCDM Final Log Spectral Distance: %e \n',apd_fcdm_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_fcdm_SDR apd_fcdm_SIR apd_fcdm_SAR] = bss_eval_sources(apd_fcdm_newsig',origMix');
+[apd_fcdm_SDR, apd_fcdm_SIR, apd_fcdm_SAR] = bss_eval_sources(apd_fcdm_newsig',origMix');
 fprintf('      APD-FCDM SDR: %f \t SIR: %f \t SAR: %f \n',apd_fcdm_SDR, apd_fcdm_SIR, apd_fcdm_SAR);
 
 disp('--- Finished ---')
@@ -462,11 +507,17 @@ fprintf('      APD-MURoss spectra w/ neg values?: %d \n',apd_muross_W_neg);
 fprintf('      APD-MURoss coeffs w/ neg values?: %d \n',apd_muross_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_muross_newsig)/norm(origMix);
-fprintf('      APD-MURoss Normalized Reconstruction Error: %e \n',rec_err);
+apd_muross_rec_err = norm(origMix-apd_muross_newsig)/norm(origMix);
+fprintf('      APD-MURoss Normalized Reconstruction Error: %e \n',apd_muross_rec_err);
+
+%compute log spect distance
+apd_muross_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_muross(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-MURoss Final Log Spectral Distance: %e \n',apd_muross_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_muross_SDR apd_muross_SIR apd_muross_SAR] = bss_eval_sources(apd_muross_newsig',origMix');
+[apd_muross_SDR, apd_muross_SIR, apd_muross_SAR] = bss_eval_sources(apd_muross_newsig',origMix');
 fprintf('      APD-MURoss SDR: %f \t SIR: %f \t SAR: %f \n',apd_muross_SDR, apd_muross_SIR, apd_muross_SAR);
 
 disp('--- Finished ---')
@@ -495,11 +546,18 @@ fprintf('      APD-MUBrunet spectra w/ neg values?: %d \n',apd_mubrunet_W_neg);
 fprintf('      APD-MUBrunet coeffs w/ neg values?: %d \n',apd_mubrunet_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_mubrunet_newsig)/norm(origMix);
-fprintf('      APD-MUBrunet Normalized Reconstruction Error: %e \n',rec_err);
+apd_mubrunet_rec_err = norm(origMix-apd_mubrunet_newsig)/norm(origMix);
+fprintf('      APD-MUBrunet Normalized Reconstruction Error: %e \n',apd_mubrunet_rec_err);
+
+%compute log spect distance
+apd_mubrunet_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_mubrunet(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-MUBrunet Final Log Spectral Distance: %e \n',apd_mubrunet_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_mubrunet_SDR apd_mubrunet_SIR apd_mubrunet_SAR] = bss_eval_sources(apd_mubrunet_newsig',origMix');
+[apd_mubrunet_SDR, apd_mubrunet_SIR, apd_mubrunet_SAR] = bss_eval_sources(apd_mubrunet_newsig',origMix');
 fprintf('      APD-MUBrunet SDR: %f \t SIR: %f \t SAR: %f \n',apd_mubrunet_SDR, apd_mubrunet_SIR, apd_mubrunet_SAR);
 
 disp('--- Finished ---')
@@ -543,11 +601,18 @@ fprintf('      APD-NtNMF spectra w/ neg values?: %d \n',apd_ntnmf_W_neg);
 fprintf('      APD-NtNMF coeffs w/ neg values?: %d \n',apd_ntnmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_ntnmf_newsig)/norm(origMix);
-fprintf('      APD-NtNMF Normalized Reconstruction Error: %e \n',rec_err);
+apd_ntnmf_rec_err = norm(origMix-apd_ntnmf_newsig)/norm(origMix);
+fprintf('      APD-NtNMF Normalized Reconstruction Error: %e \n',apd_ntnmf_rec_err);
+
+%compute log spect distance
+apd_ntnmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_ntnmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-NtNMF Final Log Spectral Distance: %e \n',apd_ntnmf_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_ntnmf_SDR apd_ntnmf_SIR apd_ntnmf_SAR] = bss_eval_sources(apd_ntnmf_newsig',origMix');
+[apd_ntnmf_SDR, apd_ntnmf_SIR, apd_ntnmf_SAR] = bss_eval_sources(apd_ntnmf_newsig',origMix');
 fprintf('      APD-NtNMF SDR: %f \t SIR: %f \t SAR: %f \n',apd_ntnmf_SDR, apd_ntnmf_SIR, apd_ntnmf_SAR);
 
 disp('--- Finished ---')
@@ -592,11 +657,18 @@ fprintf('      APD-pglin spectra w/ neg values?: %d \n',apd_pglin_W_neg);
 fprintf('      APD-pglin coeffs w/ neg values?: %d \n',apd_pglin_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_pglin_newsig)/norm(origMix);
-fprintf('      APD-pglin Normalized Reconstruction Error: %e \n',rec_err);
+apd_pglin_rec_err = norm(origMix-apd_pglin_newsig)/norm(origMix);
+fprintf('      APD-pglin Normalized Reconstruction Error: %e \n',apd_pglin_rec_err);
+
+%compute log spect distance
+apd_pglin_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_pglin(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-pglin Final Log Spectral Distance: %e \n',apd_pglin_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_pglin_SDR apd_pglin_SIR apd_pglin_SAR] = bss_eval_sources(apd_pglin_newsig',origMix');
+[apd_pglin_SDR, apd_pglin_SIR, apd_pglin_SAR] = bss_eval_sources(apd_pglin_newsig',origMix');
 fprintf('      APD-pglin SDR: %f \t SIR: %f \t SAR: %f \n',apd_pglin_SDR, apd_pglin_SIR, apd_pglin_SAR);
 
 disp('--- Finished ---')
@@ -638,12 +710,30 @@ fprintf('      APD-qnnmf spectra w/ neg values?: %d \n',apd_qnnmf_W_neg);
 fprintf('      APD-qnnmf coeffs w/ neg values?: %d \n',apd_qnnmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-apd_qnnmf_newsig)/norm(origMix);
-fprintf('      APD-qnnmf Normalized Reconstruction Error: %e \n',rec_err);
+apd_qnnmf_rec_err = norm(origMix-apd_qnnmf_newsig)/norm(origMix);
+fprintf('      APD-qnnmf Normalized Reconstruction Error: %e \n',apd_qnnmf_rec_err);
+
+%compute log spect distance
+apd_qnnmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(apd_qnnmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      APD-qnnmf Final Log Spectral Distance: %e \n',apd_qnnmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[apd_qnnmf_SDR apd_qnnmf_SIR apd_qnnmf_SAR] = bss_eval_sources(apd_qnnmf_newsig',origMix');
+[apd_qnnmf_SDR, apd_qnnmf_SIR, apd_qnnmf_SAR] = bss_eval_sources(apd_qnnmf_newsig',origMix');
 fprintf('      APD-qnnmf SDR: %f \t SIR: %f \t SAR: %f \n',apd_qnnmf_SDR, apd_qnnmf_SIR, apd_qnnmf_SAR);
 
 disp('--- Finished ---')
 
+%% present results in a table for easier incorporation in other docs
+
+T = table(...
+[apd_muacc_time apd_pglinacc_time apd_halsacc_time apd_actset_time apd_blockp_time apd_aloexact_time apd_fcdm_time apd_muross_time apd_mubrunet_time apd_ntnmf_time apd_pglin_time apd_qnnmf_time ]',...
+[apd_muacc_W_neg apd_pglinacc_W_neg apd_halsacc_W_neg apd_actset_W_neg apd_blockp_W_neg apd_aloexact_W_neg apd_fcdm_W_neg apd_muross_W_neg apd_mubrunet_W_neg apd_ntnmf_W_neg apd_pglin_W_neg apd_qnnmf_W_neg]',...
+[apd_muacc_H_neg apd_pglinacc_H_neg apd_halsacc_H_neg apd_actset_H_neg apd_blockp_H_neg apd_aloexact_H_neg apd_fcdm_H_neg apd_muross_H_neg apd_mubrunet_H_neg apd_ntnmf_H_neg apd_pglin_H_neg apd_qnnmf_H_neg]',...
+[apd_muacc_rec_err apd_pglinacc_rec_err apd_halsacc_rec_err apd_actset_rec_err apd_blockp_rec_err apd_aloexact_rec_err apd_fcdm_rec_err apd_muross_rec_err apd_mubrunet_rec_err apd_ntnmf_rec_err apd_pglin_rec_err apd_qnnmf_rec_err]',...
+[apd_muacc_logspectdist apd_pglinacc_logspectdist apd_halsacc_logspectdist apd_actset_logspectdist apd_blockp_logspectdist apd_aloexact_logspectdist apd_fcdm_logspectdist apd_muross_logspectdist apd_mubrunet_logspectdist apd_ntnmf_logspectdist apd_pglin_logspectdist apd_qnnmf_logspectdist]',...
+[apd_muacc_SDR apd_pglinacc_SDR apd_halsacc_SDR apd_actset_SDR apd_blockp_SDR apd_aloexact_SDR apd_fcdm_SDR apd_muross_SDR apd_mubrunet_SDR apd_ntnmf_SDR apd_pglin_SDR apd_qnnmf_SDR ]',...
+'VariableNames', {'Time', 'NegW', 'NegH', 'RecErr', 'LogSpectDist', 'SDR'}, ...
+'RowNames', {'APD Accel MU','APD Accel PGLIN', 'APD Accel HALS', 'APD ActiveSet', 'APD BlockPivot', 'APD AloExact', 'APD FCDM', 'APD MURoss', 'APD MUBrunet', 'APD NewtonNMF', 'APD PGLIN', 'APD QNNMF'}...
+)

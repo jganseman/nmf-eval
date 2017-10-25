@@ -70,6 +70,7 @@ fprintf('      Normalized Reconstruction Error: %e \n',rec_err);
 
 MySTFTabs = abs(MySTFT)+eps;
 phase = MySTFT./MySTFTabs;
+[numrows,numcols] = size(MySTFTabs);
 
 %% TEST lrslibrary's Deep-Semi-Nmf
 % function [ Z, H, dnorm ] = deep_seminmf ( X, layers, varargin )
@@ -99,11 +100,17 @@ fprintf('      LRS-DSNMF spectra w/ neg values?: %d \n',lrs_dsnmf_W_neg);
 fprintf('      LRS-DSNMF coeffs w/ neg values?: %d \n',lrs_dsnmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_dsnmf_newsig)/norm(origMix);
-fprintf('      LRS-DSNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_dsnmf_rec_err = norm(origMix-lrs_dsnmf_newsig)/norm(origMix);
+fprintf('      LRS-DSNMF Normalized Reconstruction Error: %e \n',lrs_dsnmf_rec_err);
+
+%compute log spect distance
+lrs_dsnmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_dsnmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-DSNMF Final Log Spectral Distance: %e \n',lrs_dsnmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_dsnmf_SDR lrs_dsnmf_SIR lrs_dsnmf_SAR] = bss_eval_sources(lrs_dsnmf_newsig',origMix');
+[lrs_dsnmf_SDR, lrs_dsnmf_SIR, lrs_dsnmf_SAR] = bss_eval_sources(lrs_dsnmf_newsig',origMix');
 fprintf('      LRS-DSNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_dsnmf_SDR, lrs_dsnmf_SIR, lrs_dsnmf_SAR);
 
 disp('--- Finished ---')
@@ -155,11 +162,17 @@ fprintf('      LRS-DRMF spectra w/ neg values?: %d \n',lrs_drmf_W_neg);
 fprintf('      LRS-DRMF coeffs w/ neg values?: %d \n',lrs_drmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_drmf_newsig)/norm(origMix);
-fprintf('      LRS-DRMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_drmf_rec_err = norm(origMix-lrs_drmf_newsig)/norm(origMix);
+fprintf('      LRS-DRMF Normalized Reconstruction Error: %e \n',lrs_drmf_rec_err);
+
+%compute log spect distance
+lrs_drmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_drmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-DRMF Final Log Spectral Distance: %e \n',lrs_drmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_drmf_SDR lrs_drmf_SIR lrs_drmf_SAR] = bss_eval_sources(lrs_drmf_newsig',origMix');
+[lrs_drmf_SDR, lrs_drmf_SIR, lrs_drmf_SAR] = bss_eval_sources(lrs_drmf_newsig',origMix');
 fprintf('      LRS-DRMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_drmf_SDR, lrs_drmf_SIR, lrs_drmf_SAR);
 
 disp('--- Finished ---')
@@ -190,11 +203,17 @@ fprintf('      LRS-ENMF spectra w/ neg values?: %d \n',lrs_enmf_W_neg);
 fprintf('      LRS-ENMF coeffs w/ neg values?: %d \n',lrs_enmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_enmf_newsig)/norm(origMix);
-fprintf('      LRS-ENMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_enmf_rec_err = norm(origMix-lrs_enmf_newsig)/norm(origMix);
+fprintf('      LRS-ENMF Normalized Reconstruction Error: %e \n',lrs_enmf_rec_err);
+
+%compute log spect distance
+lrs_enmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_enmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-ENMF Final Log Spectral Distance: %e \n',lrs_enmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_enmf_SDR lrs_enmf_SIR lrs_enmf_SAR] = bss_eval_sources(lrs_enmf_newsig',origMix');
+[lrs_enmf_SDR, lrs_enmf_SIR, lrs_enmf_SAR] = bss_eval_sources(lrs_enmf_newsig',origMix');
 fprintf('      LRS-ENMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_enmf_SDR, lrs_enmf_SIR, lrs_enmf_SAR);
 
 disp('--- Finished ---')
@@ -258,11 +277,17 @@ fprintf('      LRS-iNMF spectra w/ neg values?: %d \n',lrs_inmf_W_neg);
 fprintf('      LRS-iNMF coeffs w/ neg values?: %d \n',lrs_inmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_inmf_newsig)/norm(origMix);
-fprintf('      LRS-iNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_inmf_rec_err = norm(origMix-lrs_inmf_newsig)/norm(origMix);
+fprintf('      LRS-iNMF Normalized Reconstruction Error: %e \n',lrs_inmf_rec_err);
+
+%compute log spect distance
+lrs_inmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_inmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-iNMF Final Log Spectral Distance: %e \n',lrs_inmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_inmf_SDR lrs_inmf_SIR lrs_inmf_SAR] = bss_eval_sources(lrs_inmf_newsig',origMix');
+[lrs_inmf_SDR, lrs_inmf_SIR, lrs_inmf_SAR] = bss_eval_sources(lrs_inmf_newsig',origMix');
 fprintf('      LRS-iNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_inmf_SDR, lrs_inmf_SIR, lrs_inmf_SAR);
 
 disp('--- Finished ---')
@@ -306,11 +331,17 @@ fprintf('      LRS-LNMF spectra w/ neg values?: %d \n',lrs_lnmf_W_neg);
 fprintf('      LRS-LNMF coeffs w/ neg values?: %d \n',lrs_lnmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_lnmf_newsig)/norm(origMix);
-fprintf('      LRS-LNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_lnmf_rec_err = norm(origMix-lrs_lnmf_newsig)/norm(origMix);
+fprintf('      LRS-LNMF Normalized Reconstruction Error: %e \n',lrs_lnmf_rec_err);
+
+%compute log spect distance
+lrs_lnmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_lnmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-LNMF Final Log Spectral Distance: %e \n',lrs_lnmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_lnmf_SDR lrs_lnmf_SIR lrs_lnmf_SAR] = bss_eval_sources(lrs_lnmf_newsig',origMix');
+[lrs_lnmf_SDR, lrs_lnmf_SIR, lrs_lnmf_SAR] = bss_eval_sources(lrs_lnmf_newsig',origMix');
 fprintf('      LRS-LNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_lnmf_SDR, lrs_lnmf_SIR, lrs_lnmf_SAR);
 
 disp('--- Finished ---')
@@ -387,11 +418,17 @@ fprintf('      LRS-ManhNMF spectra w/ neg values?: %d \n',lrs_manhnmf_W_neg);
 fprintf('      LRS-ManhNMF coeffs w/ neg values?: %d \n',lrs_manhnmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_manhnmf_newsig)/norm(origMix);
-fprintf('      LRS-ManhNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_manhnmf_rec_err = norm(origMix-lrs_manhnmf_newsig)/norm(origMix);
+fprintf('      LRS-ManhNMF Normalized Reconstruction Error: %e \n',lrs_manhnmf_rec_err);
+
+%compute log spect distance
+lrs_manhnmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_manhnmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-ManhNMF Final Log Spectral Distance: %e \n',lrs_manhnmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_manhnmf_SDR lrs_manhnmf_SIR lrs_manhnmf_SAR] = bss_eval_sources(lrs_manhnmf_newsig',origMix');
+[lrs_manhnmf_SDR, lrs_manhnmf_SIR lrs_manhnmf_SAR] = bss_eval_sources(lrs_manhnmf_newsig',origMix');
 fprintf('      LRS-ManhNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_manhnmf_SDR, lrs_manhnmf_SIR, lrs_manhnmf_SAR);
 
 disp('--- Finished ---')
@@ -462,11 +499,17 @@ fprintf('      LRS-NeNMF spectra w/ neg values?: %d \n',lrs_nenmf_W_neg);
 fprintf('      LRS-NeNMF coeffs w/ neg values?: %d \n',lrs_nenmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_nenmf_newsig)/norm(origMix);
-fprintf('      LRS-NeNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_nenmf_rec_err = norm(origMix-lrs_nenmf_newsig)/norm(origMix);
+fprintf('      LRS-NeNMF Normalized Reconstruction Error: %e \n',lrs_nenmf_rec_err);
+
+%compute log spect distance
+lrs_nenmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_nenmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-NeNMF Final Log Spectral Distance: %e \n',lrs_nenmf_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_nenmf_SDR lrs_nenmf_SIR lrs_nenmf_SAR] = bss_eval_sources(lrs_nenmf_newsig',origMix');
+[lrs_nenmf_SDR, lrs_nenmf_SIR, lrs_nenmf_SAR] = bss_eval_sources(lrs_nenmf_newsig',origMix');
 fprintf('      LRS-NeNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_nenmf_SDR, lrs_nenmf_SIR, lrs_nenmf_SAR);
 
 disp('--- Finished ---')
@@ -500,11 +543,17 @@ fprintf('      LRS-nmfLS2 spectra w/ neg values?: %d \n',lrs_ls2_W_neg);
 fprintf('      LRS-nmfLS2 coeffs w/ neg values?: %d \n',lrs_ls2_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_ls2_newsig)/norm(origMix);
-fprintf('      LRS-nmfLS2 Normalized Reconstruction Error: %e \n',rec_err);
+lrs_ls2_rec_err = norm(origMix-lrs_ls2_newsig)/norm(origMix);
+fprintf('      LRS-nmfLS2 Normalized Reconstruction Error: %e \n',lrs_ls2_rec_err);
+
+%compute log spect distance
+lrs_ls2_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_ls2(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-nmfLS2 Final Log Spectral Distance: %e \n',lrs_ls2_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_ls2_SDR lrs_ls2_SIR lrs_ls2_SAR] = bss_eval_sources(lrs_ls2_newsig',origMix');
+[lrs_ls2_SDR, lrs_ls2_SIR, lrs_ls2_SAR] = bss_eval_sources(lrs_ls2_newsig',origMix');
 fprintf('      LRS-nmfLS2 SDR: %f \t SIR: %f \t SAR: %f \n',lrs_ls2_SDR, lrs_ls2_SIR, lrs_ls2_SAR);
 
 disp('--- Finished ---')
@@ -526,7 +575,7 @@ lrs_snmf=W*H;
 
 fprintf('      LRS-SNMF Done in time: %f \n',lrs_snmf_time);
 
-%% EVALUATE lrslibrary's Deep-Semi-Nmf
+%% EVALUATE lrslibrary's Semi-NMF
 %inverse transform and cut to size
 lrs_snmf_newsig = istft_catbox(lrs_snmf.*phase, fftsize / hopsize, fftsize, 'smooth')';
 lrs_snmf_newsig = lrs_snmf_newsig(fftsize+1:fftsize+length(origMix));
@@ -538,11 +587,34 @@ fprintf('      LRS-SNMF spectra w/ neg values?: %d \n',lrs_snmf_W_neg);
 fprintf('      LRS-SNMF coeffs w/ neg values?: %d \n',lrs_snmf_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-lrs_snmf_newsig)/norm(origMix);
-fprintf('      LRS-SNMF Normalized Reconstruction Error: %e \n',rec_err);
+lrs_snmf_rec_err = norm(origMix-lrs_snmf_newsig)/norm(origMix);
+fprintf('      LRS-SNMF Normalized Reconstruction Error: %e \n',lrs_snmf_rec_err);
+
+%compute log spect distance
+lrs_snmf_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(lrs_snmf(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      LRS-SNMF Final Log Spectral Distance: %e \n',lrs_snmf_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[lrs_snmf_SDR lrs_snmf_SIR lrs_snmf_SAR] = bss_eval_sources(lrs_snmf_newsig',origMix');
+[lrs_snmf_SDR, lrs_snmf_SIR, lrs_snmf_SAR] = bss_eval_sources(lrs_snmf_newsig',origMix');
 fprintf('      LRS-SNMF SDR: %f \t SIR: %f \t SAR: %f \n',lrs_snmf_SDR, lrs_snmf_SIR, lrs_snmf_SAR);
 
 disp('--- Finished ---')
+
+
+%% present results in a table for easier incorporation in other docs
+
+T = table(...
+[lrs_dsnmf_time lrs_drmf_time lrs_enmf_time lrs_inmf_time lrs_lnmf_time lrs_manhnmf_time lrs_nenmf_time lrs_ls2_time lrs_snmf_time]',...
+[lrs_dsnmf_W_neg lrs_drmf_W_neg lrs_enmf_W_neg lrs_inmf_W_neg lrs_lnmf_W_neg lrs_manhnmf_W_neg lrs_nenmf_W_neg lrs_ls2_W_neg lrs_snmf_W_neg]',...
+[lrs_dsnmf_H_neg lrs_drmf_H_neg lrs_enmf_H_neg lrs_inmf_H_neg lrs_lnmf_H_neg lrs_manhnmf_H_neg lrs_nenmf_H_neg lrs_ls2_H_neg lrs_snmf_H_neg]',...
+[lrs_dsnmf_rec_err lrs_drmf_rec_err lrs_enmf_rec_err lrs_inmf_rec_err lrs_lnmf_rec_err lrs_manhnmf_rec_err lrs_nenmf_rec_err lrs_ls2_rec_err lrs_snmf_rec_err]',...
+[lrs_dsnmf_logspectdist lrs_drmf_logspectdist lrs_enmf_logspectdist lrs_inmf_logspectdist lrs_lnmf_logspectdist lrs_manhnmf_logspectdist lrs_nenmf_logspectdist lrs_ls2_logspectdist lrs_snmf_logspectdist]',...
+[lrs_dsnmf_SDR lrs_drmf_SDR lrs_enmf_SDR lrs_inmf_SDR lrs_lnmf_SDR lrs_manhnmf_SDR lrs_nenmf_SDR lrs_ls2_SDR lrs_snmf_SDR]',...
+'VariableNames', {'Time', 'NegW', 'NegH', 'RecErr', 'LogSpectDist', 'SDR'}, ...
+'RowNames', {'lrs Deep-Semi-Nmf','lrs DRMF', 'lrs ExactNMF', 'lrs iNMF', 'lrs LMNF', 'lrs ManhNMF', 'lrs NeNMF', 'lrs nmfLS2', 'lrs Semi-NMF'}...
+)
+
+

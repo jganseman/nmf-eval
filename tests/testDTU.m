@@ -68,6 +68,7 @@ fprintf('      Normalized Reconstruction Error: %e \n',rec_err);
 
 MySTFTabs = abs(MySTFT)+eps;
 phase = MySTFT./MySTFTabs;
+[numrows,numcols] = size(MySTFTabs);
 
 %% TEST DTU's nmf_als
 % function [W,H]=nmf_als(X,K,Nitsmax,speak)
@@ -91,11 +92,18 @@ fprintf('      DTU-ALS spectra w/ neg values?: %d \n',dtu_als_W_neg);
 fprintf('      DTU-ALS coeffs w/ neg values?: %d \n',dtu_als_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-dtu_als_newsig)/norm(origMix);
-fprintf('      DTU-ALS Normalized Reconstruction Error: %e \n',rec_err);
+dtu_als_rec_err = norm(origMix-dtu_als_newsig)/norm(origMix);
+fprintf('      DTU-ALS Normalized Reconstruction Error: %e \n',dtu_als_rec_err);
+
+%compute log spect distance
+dtu_als_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(dtu_als(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      DTU-ALS Final Log Spectral Distance: %e \n',dtu_als_logspectdist);
+
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[dtu_als_SDR dtu_als_SIR dtu_als_SAR] = bss_eval_sources(dtu_als_newsig',origMix');
+[dtu_als_SDR, dtu_als_SIR, dtu_als_SAR] = bss_eval_sources(dtu_als_newsig',origMix');
 fprintf('      DTU-ALS SDR: %f \t SIR: %f \t SAR: %f \n',dtu_als_SDR, dtu_als_SIR, dtu_als_SAR);
 
 disp('--- Finished ---')
@@ -122,11 +130,17 @@ fprintf('      DTU-ALSOBS spectra w/ neg values?: %d \n',dtu_alsobs_W_neg);
 fprintf('      DTU-ALSOBS coeffs w/ neg values?: %d \n',dtu_alsobs_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-dtu_alsobs_newsig)/norm(origMix);
-fprintf('      DTU-ALSOBS Normalized Reconstruction Error: %e \n',rec_err);
+dtu_alsobs_rec_err = norm(origMix-dtu_alsobs_newsig)/norm(origMix);
+fprintf('      DTU-ALSOBS Normalized Reconstruction Error: %e \n',dtu_alsobs_rec_err);
+
+%compute log spect distance
+dtu_alsobs_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(dtu_alsobs(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      DTU-ALSOBS Final Log Spectral Distance: %e \n',dtu_alsobs_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[dtu_alsobs_SDR dtu_alsobs_SIR dtu_alsobs_SAR] = bss_eval_sources(dtu_alsobs_newsig',origMix');
+[dtu_alsobs_SDR, dtu_alsobs_SIR, dtu_alsobs_SAR] = bss_eval_sources(dtu_alsobs_newsig',origMix');
 fprintf('      DTU-ALSOBS SDR: %f \t SIR: %f \t SAR: %f \n',dtu_alsobs_SDR, dtu_alsobs_SIR, dtu_alsobs_SAR);
 
 disp('--- Finished ---')
@@ -158,11 +172,17 @@ fprintf('      DTU-CJLIN spectra w/ neg values?: %d \n',dtu_cjlin_W_neg);
 fprintf('      DTU-CJLIN coeffs w/ neg values?: %d \n',dtu_cjlin_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-dtu_cjlin_newsig)/norm(origMix);
-fprintf('      DTU-CJLIN Normalized Reconstruction Error: %e \n',rec_err);
+dtu_cjlin_rec_err = norm(origMix-dtu_cjlin_newsig)/norm(origMix);
+fprintf('      DTU-CJLIN Normalized Reconstruction Error: %e \n',dtu_cjlin_rec_err);
+
+%compute log spect distance
+dtu_cjlin_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(dtu_cjlin(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      DTU-CJLIN Final Log Spectral Distance: %e \n',dtu_cjlin_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[dtu_cjlin_SDR dtu_cjlin_SIR dtu_cjlin_SAR] = bss_eval_sources(dtu_cjlin_newsig',origMix');
+[dtu_cjlin_SDR, dtu_cjlin_SIR, dtu_cjlin_SAR] = bss_eval_sources(dtu_cjlin_newsig',origMix');
 fprintf('      DTU-CJLIN SDR: %f \t SIR: %f \t SAR: %f \n',dtu_cjlin_SDR, dtu_cjlin_SIR, dtu_cjlin_SAR);
 
 disp('--- Finished ---')
@@ -189,11 +209,17 @@ fprintf('      DTU-MM spectra w/ neg values?: %d \n',dtu_mm_W_neg);
 fprintf('      DTU-MM coeffs w/ neg values?: %d \n',dtu_mm_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-dtu_mm_newsig)/norm(origMix);
-fprintf('      DTU-MM Normalized Reconstruction Error: %e \n',rec_err);
+dtu_mm_rec_err = norm(origMix-dtu_mm_newsig)/norm(origMix);
+fprintf('      DTU-MM Normalized Reconstruction Error: %e \n',dtu_mm_rec_err);
+
+%compute log spect distance
+dtu_mm_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(dtu_mm(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      DTU-MM Final Log Spectral Distance: %e \n',dtu_mm_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[dtu_mm_SDR dtu_mm_SIR dtu_mm_SAR] = bss_eval_sources(dtu_mm_newsig',origMix');
+[dtu_mm_SDR, dtu_mm_SIR, dtu_mm_SAR] = bss_eval_sources(dtu_mm_newsig',origMix');
 fprintf('      DTU-MM SDR: %f \t SIR: %f \t SAR: %f \n',dtu_mm_SDR, dtu_mm_SIR, dtu_mm_SAR);
 
 disp('--- Finished ---')
@@ -220,11 +246,31 @@ fprintf('      DTU-PROB spectra w/ neg values?: %d \n',dtu_prob_W_neg);
 fprintf('      DTU-PROB coeffs w/ neg values?: %d \n',dtu_prob_H_neg);
 
 %compute reconstruction error
-rec_err = norm(origMix-dtu_prob_newsig)/norm(origMix);
-fprintf('      DTU-PROB Normalized Reconstruction Error: %e \n',rec_err);
+dtu_prob_rec_err = norm(origMix-dtu_prob_newsig)/norm(origMix);
+fprintf('      DTU-PROB Normalized Reconstruction Error: %e \n',dtu_prob_rec_err);
+
+%compute log spect distance
+dtu_prob_logspectdist = mean(sqrt(sum( ...
+    reshape( (10*log10((MySTFTabs(:)+eps)./(dtu_prob(:)+eps))).^2 , numrows, numcols)  ...
+    ,1)));  
+fprintf('      DTU-PROB Final Log Spectral Distance: %e \n',dtu_prob_logspectdist);
 
 % compute BSS EVAL. make sure we define rows as signals, not columns
-[dtu_prob_SDR dtu_prob_SIR dtu_prob_SAR] = bss_eval_sources(dtu_prob_newsig',origMix');
+[dtu_prob_SDR, dtu_prob_SIR, dtu_prob_SAR] = bss_eval_sources(dtu_prob_newsig',origMix');
 fprintf('      DTU-PROB SDR: %f \t SIR: %f \t SAR: %f \n',dtu_prob_SDR, dtu_prob_SIR, dtu_prob_SAR);
 
 disp('--- Finished ---')
+
+
+%% present results in a table for easier incorporation in other docs
+
+T = table(...
+[dtu_als_time dtu_alsobs_time dtu_cjlin_time dtu_mm_time dtu_prob_time ]',...
+[dtu_als_W_neg dtu_alsobs_W_neg dtu_cjlin_W_neg dtu_mm_W_neg dtu_prob_W_neg ]',...
+[dtu_als_H_neg dtu_alsobs_H_neg dtu_cjlin_H_neg dtu_mm_H_neg dtu_prob_H_neg ]',...
+[dtu_als_rec_err dtu_alsobs_rec_err dtu_cjlin_rec_err dtu_mm_rec_err dtu_prob_rec_err ]',...
+[dtu_als_logspectdist dtu_alsobs_logspectdist dtu_cjlin_logspectdist dtu_mm_logspectdist dtu_prob_logspectdist ]',...
+[dtu_als_SDR dtu_alsobs_SDR dtu_cjlin_SDR dtu_mm_SDR dtu_prob_SDR ]',...
+'VariableNames', {'Time', 'NegW', 'NegH', 'RecErr', 'LogSpectDist', 'SDR'}, ...
+'RowNames', {'DTU ALS','DTU ALSOBS', 'DTU CJLIN', 'DTU MM', 'DTU PROB'}...
+)
