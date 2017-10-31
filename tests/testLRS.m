@@ -11,7 +11,7 @@
 
 % Phase is ignored in the NMF; the inverse STFT uses the original phase data.
 
-% For separation instead of signal reconstruction, BSS_EVAL 2.1 is used.
+% For separation instead of signal reconstruction, BSS_EVAL 3.0 is used.
 
 
 %%
@@ -184,7 +184,7 @@ disp('--- Finished ---')
 % built-in tolerance: 1e-6
 % built-in iterations: 1000 in HALS subroutine
 tic;
-[W,H] = ExactNMF(MySTFTabs, nrcomponents, maxiter); % nr attempts has nothing to do with max_iter though 
+[W,H] = ExactNMF(MySTFTabs, nrcomponents, 1); % nr attempts has nothing to do with max_iter though 
 lrs_enmf_time=toc;
 
 lrs_enmf=W*H;
@@ -522,7 +522,7 @@ disp('--- Finished ---')
 % function [W, H, err_ratio, err_v] = nmfLS2(V, K, max_iter, use_nndsvd, tol, step)
 
 tic;
-[W, H, err_ratio, err_v] = nmfLS2(MySTFTabs, nrcomponents, maxiter, 1, eps);
+[W, H, err_ratio, err_v] = nmfLS2(MySTFTabs, nrcomponents, maxiter, 0, eps);
 lrs_ls2_time=toc;
 
 lrs_ls2 = W * H;
@@ -615,6 +615,15 @@ T = table(...
 [lrs_dsnmf_SDR lrs_drmf_SDR lrs_enmf_SDR lrs_inmf_SDR lrs_lnmf_SDR lrs_manhnmf_SDR lrs_nenmf_SDR lrs_ls2_SDR lrs_snmf_SDR]',...
 'VariableNames', {'Time', 'NegW', 'NegH', 'RecErr', 'LogSpectDist', 'SDR'}, ...
 'RowNames', {'lrs Deep-Semi-Nmf','lrs DRMF', 'lrs ExactNMF', 'lrs iNMF', 'lrs LMNF', 'lrs ManhNMF', 'lrs NeNMF', 'lrs nmfLS2', 'lrs Semi-NMF'}...
-)
+);
+
+%% delete unnecessary rows/columns
+% like those with negative values
+toDelete = T.NegW > 0;
+T(toDelete, :) = [];
+% now delete NegW and NegH columns
+T(:,{'NegW', 'NegH'}) = [];
+% display table
+T
 
 

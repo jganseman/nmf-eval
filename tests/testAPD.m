@@ -11,7 +11,7 @@
 
 % Phase is ignored in the NMF; the inverse STFT uses the original phase data.
 
-% For separation instead of signal reconstruction, BSS_EVAL 2.1 is used.
+% For separation instead of signal reconstruction, BSS_EVAL 3.0 is used.
 
 %%
 clear;
@@ -736,4 +736,13 @@ T = table(...
 [apd_muacc_SDR apd_pglinacc_SDR apd_halsacc_SDR apd_actset_SDR apd_blockp_SDR apd_aloexact_SDR apd_fcdm_SDR apd_muross_SDR apd_mubrunet_SDR apd_ntnmf_SDR apd_pglin_SDR apd_qnnmf_SDR ]',...
 'VariableNames', {'Time', 'NegW', 'NegH', 'RecErr', 'LogSpectDist', 'SDR'}, ...
 'RowNames', {'APD Accel MU','APD Accel PGLIN', 'APD Accel HALS', 'APD ActiveSet', 'APD BlockPivot', 'APD AloExact', 'APD FCDM', 'APD MURoss', 'APD MUBrunet', 'APD NewtonNMF', 'APD PGLIN', 'APD QNNMF'}...
-)
+);
+
+%% delete unnecessary rows/columns
+% like those with negative values
+toDelete = T.NegW > 0;
+T(toDelete, :) = [];
+% now delete NegW and NegH columns
+T(:,{'NegW', 'NegH'}) = [];
+% display table
+T
