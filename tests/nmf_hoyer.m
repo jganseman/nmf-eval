@@ -1,10 +1,10 @@
 % This file is copied here under a different name for testing of 
 % LRS library / iNMF
 
-% Hoer's code (P. O. Hoyer. Non-negative Matrix Factorization with sparseness constraints. 
+% Hoyer's code (P. O. Hoyer. Non-negative Matrix Factorization with sparseness constraints. 
 % Journal of Machine Learning Research  5:1457-1469, 2004.) is modified
 
-function [W, H, objhistory, objhistory_v] = nmf_boyer( V, rdim, showflag, ttt )
+function [W, H, objhistory, objhistory_v] = nmf_hoyer( V, rdim, showflag, ttt )
 %% INPUT
 % V: data matrix
 % rdim : matrix factorization rank

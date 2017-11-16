@@ -19,6 +19,7 @@ clear;
 addpath(genpath('../'));     % add subdirectories to path. 
     % Make sure you are in the '/tests' folder, not in the nmf-eval root!
 
+PRINTTOFILE = 1;
 
 %% Parameters
 
@@ -27,7 +28,7 @@ hopsize = fftsize / 4;      % 75% is a must if STFT coefs are going to be change
 bins_per_octave = 48;       % make this a multiple of 12 for music
 
 inputfile = 'pianoclip4notes.wav';
-maxiter = 50;
+maxiter = 30;
 nrcomponents = 4;
 
 myverbose = 1;
@@ -410,6 +411,7 @@ disp('--- Finished ---')
 % sparsity according to Eggert / Schmidt constraints
 % uses parameter alpha to control sparsity, defaults to 0
 tic;
+myalpha=1;
 [ W, H, gri_klsp_errs ] = nmf_kl_sparse_es ( MySTFTabs, nrcomponents, 'niter', maxiter, 'verb', myverbose, 'W0', MyW0, 'H0', MyH0, 'alpha', myalpha);
 gri_klsp_time=toc;
 gri_klsp=W*H;
@@ -445,6 +447,7 @@ disp('--- Finished ---')
 % sparsity according to Virtanen constraints
 % uses parameter alpha to control sparsity, defaults to 0
 tic;
+myalpha=1;
 [ W, H, gri_klspv_errs ] = nmf_kl_sparse_v ( MySTFTabs, nrcomponents, 'niter', maxiter, 'verb', myverbose, 'W0', MyW0, 'H0', MyH0, 'alpha', myalpha);
 gri_klspv_time=toc;
 gri_klspv=W*H;
@@ -505,12 +508,32 @@ T
 %% plot evolution of errors
 figure; 
 plot([gri_amari_errs gri_beta_errs] );
-legend({'nmflib Amari','nmflib Beta'});
+legend({'Amari','Beta'});
+xlabel('iteration');
+ylabel('divergence value');
+title('nmflib convergence behavior');
 figure;
+% euclidean error based algorithms
 plot([gri_euc_errs gri_orth_errs gri_eucsp_errs]);
-legend({'nmflib Euc', 'nmflib EucOrth', 'nmflib EucSp'});
-figure; 
-%don't plot convolutive (gri_klcon_errs) with window 1, is same as KL 
-plot([gri_kl_errs gri_klloc_errs gri_klns_errs gri_klsp_errs gri_klspv_errs]);
-legend({'nmflib KL', 'nmflib KL Local', 'nmflib KL Nonsmth', 'nmflib KL SP-ES', 'nmflib KL SP-V'});
+legend({'Euc', 'Euc orthog.', 'Euc sparse'});
+xlabel('iteration');
+ylabel('Euclidean error (+sparsity penalty)');
+%title('nmflib convergence behavior')
+% if wanted, print to file
+if PRINTTOFILE
+    filename = '../../../thesis/images/chapter5/nmflibeuc.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end
 
+%don't plot convolutive (gri_klcon_errs) with window 1, is same as KL
+figure; 
+plot([gri_kl_errs gri_klloc_errs gri_klns_errs gri_klsp_errs gri_klspv_errs]);
+legend({'KL', 'KL local', 'KL nonsmooth', 'KL sparse ES', 'KL sparse V'});
+xlabel('iteration');
+ylabel('KL divergence (+sparsity penalty)');
+%title('nmflib convergence behavior')
+% if wanted, print to file
+if PRINTTOFILE
+    filename = '../../../thesis/images/chapter5/nmflibkl.tex';
+    matlab2tikz('height', '\figureheight', 'width', '\figurewidth', 'filename', filename, 'relativeDataPath', '.')
+end

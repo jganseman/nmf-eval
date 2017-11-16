@@ -243,7 +243,7 @@ M = MySTFTabs;
 
 % Execute NMF for the first n samples
 n = 10; % take first 10 samples
-[W,H] = nmf_boyer(M(:,1:n), nrcomponents, 0, maxiter);
+[W,H] = nmf_hoyer(M(:,1:n), nrcomponents, 0, maxiter);
 L = W*H;
 % Now we can execute iNMF on each new samples
 %maxiter = 50;
